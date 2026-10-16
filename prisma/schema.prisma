@@ -53,3 +53,64 @@ model Session {
   @@index([userId])
   @@index([expiresAt])
 }
+
+enum Genre {
+  FOLKTALE
+  ADVENTURE
+  FAMILY
+  FRIENDSHIP
+  MYSTERY
+  DAILY_LIFE
+}
+
+enum PublishStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model Story {
+  id        String        @id @default(cuid())
+  slug      String        @unique
+  titleBn   String
+  titleEn   String
+  summaryBn String
+  summaryEn String
+  genre     Genre
+  level     Int // 1 = beginner … 5 = advanced
+  status    PublishStatus @default(DRAFT)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  chapters  Chapter[]
+
+  @@index([status, createdAt])
+  @@index([genre])
+}
+
+// Guests may read chapters with requiresLogin = false; see features/stories/access.ts.
+model Chapter {
+  id            String            @id @default(cuid())
+  storyId       String
+  story         Story             @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  order         Int
+  titleBn       String
+  titleEn       String
+  requiresLogin Boolean           @default(true)
+  status        PublishStatus     @default(DRAFT)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  sentences     ChapterSentence[]
+
+  // Also serves lookups by storyId (leading column).
+  @@unique([storyId, order])
+}
+
+model ChapterSentence {
+  id        String  @id @default(cuid())
+  chapterId String
+  chapter   Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  order     Int
+  bn        String
+  en        String
+
+  @@unique([chapterId, order])
+}
