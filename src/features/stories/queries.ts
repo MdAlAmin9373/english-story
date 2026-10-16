@@ -44,6 +44,7 @@ export async function getChapter(slug: string, order: number) {
   const chapter = await db.chapter.findFirst({
     where: { order, status: "PUBLISHED", story: { slug, status: "PUBLISHED" } },
     select: {
+      id: true,
       order: true,
       titleBn: true,
       titleEn: true,

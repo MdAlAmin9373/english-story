@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/features/auth/session";
 import { canReadChapter } from "@/features/stories/access";
 import { toBnDigits } from "@/features/stories/labels";
 import { getChapter } from "@/features/stories/queries";
+import { ImportantWords } from "@/features/vocab/components/ImportantWords";
 
 export const metadata: Metadata = { title: "পড়ুন — English Story" };
 
@@ -71,6 +72,10 @@ async function ChapterReader({
           </li>
         ))}
       </ol>
+
+      <Suspense fallback={<p className="text-ink-muted">শব্দ লোড হচ্ছে…</p>}>
+        <ImportantWords chapterId={chapter.id} />
+      </Suspense>
 
       <nav aria-label="অধ্যায় নেভিগেশন" className="flex justify-between gap-3 pt-2">
         {chapter.prevOrder !== null ? (

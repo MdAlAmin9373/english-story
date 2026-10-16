@@ -99,6 +99,7 @@ model Chapter {
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
   sentences     ChapterSentence[]
+  words         VocabularyWord[]
 
   // Also serves lookups by storyId (leading column).
   @@unique([storyId, order])
@@ -113,4 +114,47 @@ model ChapterSentence {
   en        String
 
   @@unique([chapterId, order])
+}
+
+enum TenseKind {
+  SIMPLE
+  CONTINUOUS
+  PERFECT
+}
+
+enum TenseTime {
+  PRESENT
+  PAST
+  FUTURE
+}
+
+// "Important words" shown under a chapter's sentences.
+model VocabularyWord {
+  id              String  @id @default(cuid())
+  chapterId       String
+  chapter         Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  order           Int // display order in the panel
+  word            String // lowercase base form, e.g. "fly"
+  meaningBn       String
+  pronunciationBn String // e.g. "ফ্লাই"
+  exampleEn       String
+  exampleBn       String
+
+  @@unique([chapterId, word])
+  // Also serves lookups by chapterId (leading column).
+  @@unique([chapterId, order])
+  @@index([word])
+}
+
+// Keyed by the base-form string (no FK), so every chapter using the word shares its forms.
+model WordForm {
+  id        String    @id @default(cuid())
+  word      String // matches VocabularyWord.word
+  kind      TenseKind
+  time      TenseTime
+  form      String // he/she form, e.g. "flies", "is flying", "has flown"
+  exampleEn String
+
+  // One cell per tense; also serves lookups by word (leading column).
+  @@unique([word, time, kind])
 }

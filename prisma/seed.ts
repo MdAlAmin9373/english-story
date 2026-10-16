@@ -70,6 +70,119 @@ const chapters: SeedChapter[] = [
   },
 ];
 
+type SeedWord = {
+  word: string;
+  meaningBn: string;
+  pronunciationBn: string;
+  exampleEn: string;
+  exampleBn: string;
+};
+
+// Important words for chapter 1, in display order.
+const chapterOneWords: SeedWord[] = [
+  { word: "village", meaningBn: "গ্রাম", pronunciationBn: "ভিলেজ", exampleEn: "My grandmother lives in a quiet village.", exampleBn: "আমার দাদি একটি শান্ত গ্রামে থাকেন।" },
+  { word: "river", meaningBn: "নদী", pronunciationBn: "রিভার", exampleEn: "The children swim in the river in summer.", exampleBn: "গ্রীষ্মকালে শিশুরা নদীতে সাঁতার কাটে।" },
+  { word: "make", meaningBn: "বানানো, তৈরি করা", pronunciationBn: "মেইক", exampleEn: "Mother makes rice cakes in winter.", exampleBn: "শীতকালে মা পিঠা বানান।" },
+  { word: "kite", meaningBn: "ঘুড়ি", pronunciationBn: "কাইট", exampleEn: "Her kite has a long blue tail.", exampleBn: "তার ঘুড়ির একটি লম্বা নীল লেজ আছে।" },
+  { word: "light", meaningBn: "হালকা", pronunciationBn: "লাইট", exampleEn: "This bag is light, so I can carry it.", exampleBn: "এই ব্যাগটি হালকা, তাই আমি এটি বইতে পারি।" },
+  { word: "take", meaningBn: "নেওয়া, নিয়ে যাওয়া", pronunciationBn: "টেইক", exampleEn: "Please take an umbrella with you.", exampleBn: "দয়া করে সঙ্গে একটি ছাতা নিয়ে যাও।" },
+  { word: "strong", meaningBn: "জোরালো, শক্তিশালী", pronunciationBn: "স্ট্রং", exampleEn: "The strong wind shakes the trees.", exampleBn: "জোরালো বাতাস গাছগুলোকে নাড়ায়।" },
+  { word: "fly", meaningBn: "ওড়া, ওড়ানো", pronunciationBn: "ফ্লাই", exampleEn: "Birds fly over the field every evening.", exampleBn: "প্রতি সন্ধ্যায় পাখিরা মাঠের ওপর দিয়ে ওড়ে।" },
+];
+
+type FormPair = [form: string, exampleEn: string];
+// Per time: [simple, continuous, perfect].
+type SeedTenses = Record<"PRESENT" | "PAST" | "FUTURE", [FormPair, FormPair, FormPair]>;
+
+const tenseForms: Record<string, SeedTenses> = {
+  fly: {
+    PRESENT: [
+      ["flies", "Ratul flies his kite every Friday."],
+      ["is flying", "Ratul is flying his kite right now."],
+      ["has flown", "Ratul has flown his kite many times."],
+    ],
+    PAST: [
+      ["flew", "Ratul flew his kite yesterday."],
+      ["was flying", "Ratul was flying his kite when the string broke."],
+      ["had flown", "Ratul had flown the kite before Mitu came."],
+    ],
+    FUTURE: [
+      ["will fly", "Ratul will fly his kite tomorrow."],
+      ["will be flying", "Ratul will be flying his kite at noon."],
+      ["will have flown", "Ratul will have flown his kite by evening."],
+    ],
+  },
+  make: {
+    PRESENT: [
+      ["makes", "Mitu makes tea every morning."],
+      ["is making", "Mitu is making a paper boat now."],
+      ["has made", "Mitu has made a new kite."],
+    ],
+    PAST: [
+      ["made", "Mitu made a card for her friend yesterday."],
+      ["was making", "Mitu was making lunch when it started to rain."],
+      ["had made", "Mitu had made her bed before breakfast."],
+    ],
+    FUTURE: [
+      ["will make", "Mitu will make a cake tomorrow."],
+      ["will be making", "Mitu will be making toys all afternoon."],
+      ["will have made", "Mitu will have made ten kites by Sunday."],
+    ],
+  },
+  take: {
+    PRESENT: [
+      ["takes", "Ratul takes the bus to school."],
+      ["is taking", "Ratul is taking his dog for a walk."],
+      ["has taken", "Ratul has taken his books home."],
+    ],
+    PAST: [
+      ["took", "Ratul took a photo of the river."],
+      ["was taking", "Ratul was taking a nap when Mitu called."],
+      ["had taken", "Ratul had taken his umbrella before the rain started."],
+    ],
+    FUTURE: [
+      ["will take", "Ratul will take the boat across the river."],
+      ["will be taking", "Ratul will be taking an exam at ten."],
+      ["will have taken", "Ratul will have taken his medicine by night."],
+    ],
+  },
+};
+
+const kinds = ["SIMPLE", "CONTINUOUS", "PERFECT"] as const;
+
+async function seedVocabulary(storyId: string) {
+  const chapterOne = await db.chapter.findUniqueOrThrow({
+    where: { storyId_order: { storyId, order: 1 } },
+    select: { id: true },
+  });
+
+  for (const [i, { word, ...wordData }] of chapterOneWords.entries()) {
+    const data = { order: i + 1, ...wordData };
+    await db.vocabularyWord.upsert({
+      where: { chapterId_word: { chapterId: chapterOne.id, word } },
+      create: { chapterId: chapterOne.id, word, ...data },
+      update: data,
+    });
+  }
+
+  let formCount = 0;
+  for (const [word, times] of Object.entries(tenseForms)) {
+    for (const [time, cells] of Object.entries(times) as [keyof SeedTenses, SeedTenses[keyof SeedTenses]][]) {
+      for (const [k, [form, exampleEn]] of cells.entries()) {
+        const kind = kinds[k];
+        await db.wordForm.upsert({
+          where: { word_time_kind: { word, time, kind } },
+          create: { word, time, kind, form, exampleEn },
+          update: { form, exampleEn },
+        });
+        formCount++;
+      }
+    }
+  }
+
+  console.log(`Seeded ${chapterOneWords.length} words and ${formCount} tense forms.`);
+}
+
 async function main() {
   const { slug, ...storyData } = story;
   const savedStory = await db.story.upsert({
@@ -103,6 +216,8 @@ async function main() {
   }
 
   console.log(`Seeded "${story.titleEn}" with ${chapters.length} chapters.`);
+
+  await seedVocabulary(savedStory.id);
 }
 
 main()
