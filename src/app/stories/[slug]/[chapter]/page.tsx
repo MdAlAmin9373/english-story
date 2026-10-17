@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
+import { loginPathWithNext } from "@/features/auth/next-path";
 import { getCurrentUser } from "@/features/auth/session";
 import { canReadChapter } from "@/features/stories/access";
 import { toBnDigits } from "@/features/stories/labels";
@@ -36,9 +37,10 @@ async function ChapterReader({
     getCurrentUser(),
   ]);
   if (!chapter) notFound();
-  if (!canReadChapter(chapter, user !== null)) redirect("/login");
-
   const base = `/stories/${chapter.story.slug}`;
+  if (!canReadChapter(chapter, user !== null)) {
+    redirect(loginPathWithNext(`${base}/${chapter.order}`));
+  }
 
   return (
     <>

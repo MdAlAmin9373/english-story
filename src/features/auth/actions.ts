@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { serverEnv } from "@/lib/env";
 import { deliverOtp } from "./delivery";
+import { DEFAULT_NEXT_PATH, loginPathWithNext, safeNextPath } from "./next-path";
 import { checkOtp, generateCode, hashCode, otpExpiry } from "./otp";
 import { canRequestOtp } from "./rate-limit";
 import { codeSchema, emailSchema } from "./schemas";
@@ -77,15 +78,21 @@ export async function requestOtp(
   }
 
   await setPendingEmail(email);
-  redirect("/login/verify");
+  const next = safeNextPath(formData.get("next"));
+  redirect(
+    next === DEFAULT_NEXT_PATH
+      ? "/login/verify"
+      : `/login/verify?next=${encodeURIComponent(next)}`,
+  );
 }
 
 export async function verifyOtp(
   _prev: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
+  const next = safeNextPath(formData.get("next"));
   const email = await getPendingEmail();
-  if (!email) redirect("/login");
+  if (!email) redirect(loginPathWithNext(next));
 
   const parsed = codeSchema.safeParse(formData.get("code") ?? "");
   if (!parsed.success) return { error: parsed.error.issues[0].message };
@@ -130,7 +137,7 @@ export async function verifyOtp(
   });
   await createSession(user.id);
   await clearPendingEmail();
-  redirect("/dashboard");
+  redirect(next);
 }
 
 export async function logout(): Promise<void> {

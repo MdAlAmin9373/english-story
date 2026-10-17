@@ -5,11 +5,12 @@ import { verifyOtp, type AuthFormState } from "../actions";
 
 const initialState: AuthFormState = {};
 
-export function VerifyForm() {
+export function VerifyForm({ next }: { next: string }) {
   const [state, formAction, pending] = useActionState(verifyOtp, initialState);
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
+      <input type="hidden" name="next" value={next} />
       <label htmlFor="code" className="text-sm text-ink-muted">
         ৬ সংখ্যার কোড
       </label>

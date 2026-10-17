@@ -5,11 +5,12 @@ import { requestOtp, type AuthFormState } from "../actions";
 
 const initialState: AuthFormState = {};
 
-export function LoginForm() {
+export function LoginForm({ next }: { next: string }) {
   const [state, formAction, pending] = useActionState(requestOtp, initialState);
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
+      <input type="hidden" name="next" value={next} />
       <label htmlFor="email" className="text-sm text-ink-muted">
         ইমেইল ঠিকানা
       </label>
