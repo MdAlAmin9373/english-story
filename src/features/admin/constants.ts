@@ -15,3 +15,9 @@ export const QUESTION_TYPES = [
   "MULTIPLE_CHOICE",
   "FILL_GAP",
 ] as const satisfies readonly QuestionType[];
+
+// Kept here, not in a "use client" file, so server components can read it too.
+export const questionTypeLabel: Record<QuestionType, string> = {
+  MULTIPLE_CHOICE: "বহুনির্বাচনী",
+  FILL_GAP: "শূন্যস্থান পূরণ",
+};

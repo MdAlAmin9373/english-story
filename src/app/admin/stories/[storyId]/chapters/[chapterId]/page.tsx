@@ -12,8 +12,10 @@ import {
   updateWord,
 } from "@/features/admin/actions";
 import { ChapterForm } from "@/features/admin/components/ChapterForm";
+import { secondaryButtonClass } from "@/features/admin/components/fields";
 import { MoveButtons } from "@/features/admin/components/MoveButtons";
-import { QuestionForm, questionTypeLabel } from "@/features/admin/components/QuestionForm";
+import { questionTypeLabel } from "@/features/admin/constants";
+import { QuestionForm } from "@/features/admin/components/QuestionForm";
 import { SentenceForm } from "@/features/admin/components/SentenceForm";
 import { StatusBadge } from "@/features/admin/components/StatusBadge";
 import { VocabWordForm } from "@/features/admin/components/VocabWordForm";
@@ -56,6 +58,12 @@ async function EditChapter({
         <div className="flex flex-wrap items-center gap-2">
           <h1 className="text-2xl font-bold text-ink">{chapter.titleBn}</h1>
           <StatusBadge status={chapter.status} />
+          <Link
+            href={`/admin/stories/${chapter.story.id}/chapters/${chapter.id}/preview`}
+            className={`${secondaryButtonClass} ml-auto`}
+          >
+            প্রিভিউ
+          </Link>
         </div>
       </header>
 

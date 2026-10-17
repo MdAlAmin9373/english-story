@@ -8,6 +8,7 @@ import { ChapterQuiz } from "@/features/quiz/components/ChapterQuiz";
 import { canReadChapter } from "@/features/stories/access";
 import { toBnDigits } from "@/features/stories/labels";
 import { getChapter } from "@/features/stories/queries";
+import { SentencePairs } from "@/features/stories/components/SentencePairs";
 import { ImportantWords } from "@/features/vocab/components/ImportantWords";
 
 export const metadata: Metadata = { title: "পড়ুন — English Story" };
@@ -57,24 +58,7 @@ async function ChapterReader({
         </p>
       </header>
 
-      <div className="hidden grid-cols-2 gap-4 px-4 text-xs text-ink-muted sm:grid">
-        <span>বাংলা</span>
-        <span>English</span>
-      </div>
-
-      <ol className="flex flex-col gap-3">
-        {chapter.sentences.map((sentence) => (
-          <li
-            key={sentence.order}
-            className="grid gap-2 rounded-xl border border-navy-800 bg-navy-900 p-4 sm:grid-cols-2 sm:gap-4"
-          >
-            <p className="text-lg text-ink">{sentence.bn}</p>
-            <p lang="en" className="text-ink-muted sm:text-lg">
-              {sentence.en}
-            </p>
-          </li>
-        ))}
-      </ol>
+      <SentencePairs sentences={chapter.sentences} />
 
       <Suspense fallback={<p className="text-ink-muted">শব্দ লোড হচ্ছে…</p>}>
         <ImportantWords chapterId={chapter.id} />

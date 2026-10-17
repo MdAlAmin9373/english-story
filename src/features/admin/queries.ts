@@ -67,7 +67,7 @@ export async function getAdminChapter(storyId: string, chapterId: string) {
       titleEn: true,
       requiresLogin: true,
       status: true,
-      story: { select: { id: true, titleBn: true } },
+      story: { select: { id: true, titleBn: true, status: true } },
       sentences: {
         orderBy: { order: "asc" },
         select: { id: true, order: true, bn: true, en: true },
@@ -95,6 +95,10 @@ export async function getAdminChapter(storyId: string, chapterId: string) {
           options: true,
           correctIndex: true,
         },
+      },
+      orderTasks: {
+        orderBy: { order: "asc" },
+        select: { id: true, promptBn: true, en: true },
       },
     },
   });

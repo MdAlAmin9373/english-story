@@ -4,14 +4,9 @@ import { useActionState, useId } from "react";
 import type { QuestionType } from "@prisma/client";
 import { toBnDigits } from "@/features/stories/labels";
 import type { AdminFormState } from "../actions";
-import { QUESTION_TYPES } from "../constants";
+import { QUESTION_TYPES, questionTypeLabel } from "../constants";
 import { MAX_OPTIONS } from "../validate";
 import { Field, SubmitRow, inputClass } from "./fields";
-
-export const questionTypeLabel: Record<QuestionType, string> = {
-  MULTIPLE_CHOICE: "বহুনির্বাচনী",
-  FILL_GAP: "শূন্যস্থান পূরণ",
-};
 
 export type QuestionDefaults = {
   type: QuestionType;
