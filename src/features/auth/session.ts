@@ -1,9 +1,10 @@
 import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Role } from "@prisma/client";
 import { db } from "@/lib/db";
+import { loginPathWithNext } from "./next-path";
 import { emailSchema } from "./schemas";
 
 const SESSION_COOKIE = "es_session";
@@ -57,6 +58,15 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 export async function requireUser(): Promise<CurrentUser> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  return user;
+}
+
+// Every admin page and admin server action must call this; never trust the UI.
+// Guests are sent to login; logged-in non-admins get a 404 so /admin stays hidden.
+export async function requireAdmin(nextPath = "/admin"): Promise<CurrentUser> {
+  const user = await getCurrentUser();
+  if (!user) redirect(loginPathWithNext(nextPath));
+  if (user.role !== "ADMIN") notFound();
   return user;
 }
 
