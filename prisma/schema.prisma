@@ -21,8 +21,10 @@ model User {
   email     String    @unique
   role      Role      @default(USER)
   createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  sessions  Session[]
+  updatedAt    DateTime       @updatedAt
+  sessions     Session[]
+  quizAttempts QuizAttempt[]
+  progress     UserProgress[]
 }
 
 // Keyed by email so a User row is only created after a successful verify.
@@ -100,6 +102,9 @@ model Chapter {
   updatedAt     DateTime          @updatedAt
   sentences     ChapterSentence[]
   words         VocabularyWord[]
+  quizQuestions QuizQuestion[]
+  orderTasks    SentenceOrderTask[]
+  progress      UserProgress[]
 
   // Also serves lookups by storyId (leading column).
   @@unique([storyId, order])
@@ -157,4 +162,66 @@ model WordForm {
 
   // One cell per tense; also serves lookups by word (leading column).
   @@unique([word, time, kind])
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  FILL_GAP
+}
+
+// correctIndex is never sent to the browser before the user answers.
+model QuizQuestion {
+  id           String        @id @default(cuid())
+  chapterId    String
+  chapter      Chapter       @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  order        Int
+  type         QuestionType
+  promptBn     String
+  promptEn     String // FILL_GAP marks the blank with "___"
+  options      Json // string[]
+  correctIndex Int
+  attempts     QuizAttempt[]
+
+  // Also serves lookups by chapterId (leading column).
+  @@unique([chapterId, order])
+}
+
+model QuizAttempt {
+  id          String       @id @default(cuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId  String
+  question    QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  chosenIndex Int
+  correct     Boolean
+  createdAt   DateTime     @default(now())
+
+  // Dashboard: distinct questions a user answered correctly.
+  @@index([userId, correct, questionId])
+  @@index([questionId])
+}
+
+// Sentence-ordering game: the English sentence is split into shuffled words on the server.
+model SentenceOrderTask {
+  id        String  @id @default(cuid())
+  chapterId String
+  chapter   Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  order     Int
+  promptBn  String
+  en        String
+
+  @@unique([chapterId, order])
+}
+
+model UserProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapterId   String
+  chapter     Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+
+  @@unique([userId, chapterId])
+  @@index([userId, completedAt])
+  @@index([chapterId])
 }

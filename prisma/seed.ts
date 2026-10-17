@@ -150,6 +150,59 @@ const tenseForms: Record<string, SeedTenses> = {
 
 const kinds = ["SIMPLE", "CONTINUOUS", "PERFECT"] as const;
 
+type SeedQuestion = {
+  type: "MULTIPLE_CHOICE" | "FILL_GAP";
+  promptBn: string;
+  promptEn: string; // FILL_GAP marks the blank with "___"
+  options: string[];
+  correctIndex: number;
+};
+
+// Chapter 1 practice, written from its sentences and important words.
+const chapterOneQuestions: SeedQuestion[] = [
+  {
+    type: "MULTIPLE_CHOICE",
+    promptBn: "রাতুল কোথায় থাকে?",
+    promptEn: "Where does Ratul live?",
+    options: ["In a big city", "In a small village", "Near the sea", "In a tall building"],
+    correctIndex: 1,
+  },
+  {
+    type: "MULTIPLE_CHOICE",
+    promptBn: "\"হালকা\" শব্দটির ইংরেজি কোনটি?",
+    promptEn: "Which word means \"not heavy\"?",
+    options: ["strong", "light", "river", "kite"],
+    correctIndex: 1,
+  },
+  {
+    type: "MULTIPLE_CHOICE",
+    promptBn: "রাতুল ঘুড়িটি কোথায় নিয়ে যায়?",
+    promptEn: "Where does Ratul take the kite?",
+    options: ["To school", "To the market", "To the riverbank", "To his friend's house"],
+    correctIndex: 2,
+  },
+  {
+    type: "FILL_GAP",
+    promptBn: "আজ আকাশ পরিষ্কার আর বাতাস জোরালো।",
+    promptEn: "Today the sky is clear and the wind is ___.",
+    options: ["strong", "sad", "small", "quiet"],
+    correctIndex: 0,
+  },
+  {
+    type: "FILL_GAP",
+    promptBn: "রাতুল হাসে আর ঘুড়িটি ওড়ায়।",
+    promptEn: "Ratul smiles and ___ the kite.",
+    options: ["fly", "flies", "flying", "flew"],
+    correctIndex: 1,
+  },
+];
+
+// Sentence-ordering game for chapter 1: [Bengali prompt, English sentence].
+const chapterOneOrderTasks: [promptBn: string, en: string][] = [
+  ["এক সকালে সে একটি ঘুড়ি বানায়।", "One morning, he makes a kite."],
+  ["তার বাড়ির পাশে একটি নদী আছে।", "There is a river next to his house."],
+];
+
 async function seedVocabulary(storyId: string) {
   const chapterOne = await db.chapter.findUniqueOrThrow({
     where: { storyId_order: { storyId, order: 1 } },
@@ -181,6 +234,36 @@ async function seedVocabulary(storyId: string) {
   }
 
   console.log(`Seeded ${chapterOneWords.length} words and ${formCount} tense forms.`);
+}
+
+async function seedQuiz(storyId: string) {
+  const chapterOne = await db.chapter.findUniqueOrThrow({
+    where: { storyId_order: { storyId, order: 1 } },
+    select: { id: true },
+  });
+  const chapterId = chapterOne.id;
+
+  for (const [i, question] of chapterOneQuestions.entries()) {
+    const order = i + 1;
+    await db.quizQuestion.upsert({
+      where: { chapterId_order: { chapterId, order } },
+      create: { chapterId, order, ...question },
+      update: question,
+    });
+  }
+
+  for (const [i, [promptBn, en]] of chapterOneOrderTasks.entries()) {
+    const order = i + 1;
+    await db.sentenceOrderTask.upsert({
+      where: { chapterId_order: { chapterId, order } },
+      create: { chapterId, order, promptBn, en },
+      update: { promptBn, en },
+    });
+  }
+
+  console.log(
+    `Seeded ${chapterOneQuestions.length} quiz questions and ${chapterOneOrderTasks.length} ordering sentences.`,
+  );
 }
 
 async function main() {
@@ -218,6 +301,7 @@ async function main() {
   console.log(`Seeded "${story.titleEn}" with ${chapters.length} chapters.`);
 
   await seedVocabulary(savedStory.id);
+  await seedQuiz(savedStory.id);
 }
 
 main()

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { logout } from "@/features/auth/actions";
 import { requireUser } from "@/features/auth/session";
+import { ProgressSummary } from "@/features/quiz/components/ProgressSummary";
 
 export const metadata: Metadata = { title: "ড্যাশবোর্ড — English Story" };
 
@@ -28,7 +29,9 @@ async function DashboardPanel() {
           {user.email}
         </span>
       </p>
-      <p className="text-ink-muted">আপনার গল্প ও অগ্রগতি শীঘ্রই এখানে দেখা যাবে।</p>
+      <Suspense fallback={<p className="text-ink-muted">অগ্রগতি লোড হচ্ছে…</p>}>
+        <ProgressSummary userId={user.id} />
+      </Suspense>
       <form action={logout}>
         <button
           type="submit"

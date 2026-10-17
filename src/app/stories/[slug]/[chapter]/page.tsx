@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { loginPathWithNext } from "@/features/auth/next-path";
 import { getCurrentUser } from "@/features/auth/session";
+import { ChapterQuiz } from "@/features/quiz/components/ChapterQuiz";
 import { canReadChapter } from "@/features/stories/access";
 import { toBnDigits } from "@/features/stories/labels";
 import { getChapter } from "@/features/stories/queries";
@@ -78,6 +79,23 @@ async function ChapterReader({
       <Suspense fallback={<p className="text-ink-muted">শব্দ লোড হচ্ছে…</p>}>
         <ImportantWords chapterId={chapter.id} />
       </Suspense>
+
+      {user ? (
+        <Suspense fallback={<p className="text-ink-muted">অনুশীলন লোড হচ্ছে…</p>}>
+          <ChapterQuiz chapterId={chapter.id} userId={user.id} />
+        </Suspense>
+      ) : (
+        <p className="rounded-xl border border-navy-800 bg-navy-900 p-4 text-ink-muted">
+          অনুশীলন করতে ও অগ্রগতি সংরক্ষণ করতে{" "}
+          <Link
+            href={loginPathWithNext(`${base}/${chapter.order}`)}
+            className="text-accent hover:underline"
+          >
+            লগইন করুন
+          </Link>
+          ।
+        </p>
+      )}
 
       <nav aria-label="অধ্যায় নেভিগেশন" className="flex justify-between gap-3 pt-2">
         {chapter.prevOrder !== null ? (
