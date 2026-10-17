@@ -56,3 +56,25 @@ export function FormMessage({ error, saved }: { error?: string; saved?: boolean 
   }
   return null;
 }
+
+// Message + submit button used by the sentence, word and question editors.
+export function SubmitRow({
+  pending,
+  label,
+  error,
+  saved,
+}: {
+  pending: boolean;
+  label: string;
+  error?: string;
+  saved?: boolean;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <button type="submit" disabled={pending} className={primaryButtonClass}>
+        {pending ? "সংরক্ষণ হচ্ছে…" : label}
+      </button>
+      <FormMessage error={error} saved={saved} />
+    </div>
+  );
+}

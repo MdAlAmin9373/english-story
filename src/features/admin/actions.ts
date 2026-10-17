@@ -6,7 +6,17 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/features/auth/session";
-import { chapterSchema, idSchema, moveSchema, statusSchema, storySchema } from "./schemas";
+import {
+  chapterItemMoveSchema,
+  chapterSchema,
+  idSchema,
+  moveSchema,
+  questionSchema,
+  sentenceSchema,
+  statusSchema,
+  storySchema,
+  wordSchema,
+} from "./schemas";
 import { nextOrder, swapTarget } from "./validate";
 
 // Every action calls requireAdmin() first: the admin UI is never trusted.
@@ -25,6 +35,7 @@ const MSG = {
   notFound: "এটি পাওয়া যায়নি। পাতাটি আবার লোড করুন।",
   slugTaken: "এই স্লাগ দিয়ে আরেকটি গল্প আছে। অন্য স্লাগ দিন।",
   orderClash: "একই সময়ে আরেকটি পরিবর্তন হয়েছে। আবার চেষ্টা করুন।",
+  wordTaken: "এই শব্দটি এই অধ্যায়ে আগেই আছে।",
   failed: "সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।",
 } as const;
 
@@ -226,5 +237,202 @@ export async function moveChapter(formData: FormData): Promise<void> {
   await moveRow(chapter.story.chapters, parsed.data.id, parsed.data.direction, (tx, id, order) =>
     tx.chapter.update({ where: { id }, data: { order } }),
   );
+  refresh();
+}
+
+// Shared body of the sentence / word / question form actions: validate, write,
+// and turn database errors into Bengali messages. `write` may return a state
+// to stop early (e.g. a duplicate word).
+async function saveItem<T>(
+  schema: z.ZodType<T>,
+  formData: FormData,
+  write: (data: T) => Promise<AdminFormState | void>,
+): Promise<AdminFormState> {
+  const values = formValues(formData);
+  const parsed = schema.safeParse(values);
+  if (!parsed.success) return invalid(parsed.error, values);
+
+  try {
+    const stop = await write(parsed.data);
+    if (stop) return { ...stop, values };
+  } catch (err) {
+    switch (prismaCode(err)) {
+      case "P2002":
+        return { error: MSG.orderClash, values };
+      case "P2003": // the chapter no longer exists
+      case "P2025":
+        return { error: MSG.notFound, values };
+    }
+    console.error("[admin] saveItem failed:", (err as Error).message);
+    return { error: MSG.failed, values };
+  }
+  refresh();
+  return { saved: true };
+}
+
+// New rows are appended after the chapter's last row of that kind.
+export async function createSentence(
+  chapterId: string,
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+  const id = idSchema.safeParse(chapterId);
+  if (!id.success) return { error: MSG.notFound };
+
+  return saveItem(sentenceSchema, formData, async (data) => {
+    const rows = await db.chapterSentence.findMany({
+      where: { chapterId: id.data },
+      select: { order: true },
+    });
+    await db.chapterSentence.create({
+      data: { ...data, chapterId: id.data, order: nextOrder(rows.map((r) => r.order)) },
+    });
+  });
+}
+
+export async function updateSentence(
+  sentenceId: string,
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+  const id = idSchema.safeParse(sentenceId);
+  if (!id.success) return { error: MSG.notFound };
+
+  return saveItem(sentenceSchema, formData, async (data) => {
+    await db.chapterSentence.update({ where: { id: id.data }, data });
+  });
+}
+
+// A word may appear only once per chapter (@@unique([chapterId, word])).
+async function wordTaken(chapterId: string, word: string, exceptId?: string) {
+  const existing = await db.vocabularyWord.findFirst({
+    where: { chapterId, word, ...(exceptId && { NOT: { id: exceptId } }) },
+    select: { id: true },
+  });
+  return existing ? { error: MSG.wordTaken, fieldErrors: { word: [MSG.wordTaken] } } : null;
+}
+
+export async function createWord(
+  chapterId: string,
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+  const id = idSchema.safeParse(chapterId);
+  if (!id.success) return { error: MSG.notFound };
+
+  return saveItem(wordSchema, formData, async (data) => {
+    const taken = await wordTaken(id.data, data.word);
+    if (taken) return taken;
+    const rows = await db.vocabularyWord.findMany({
+      where: { chapterId: id.data },
+      select: { order: true },
+    });
+    await db.vocabularyWord.create({
+      data: { ...data, chapterId: id.data, order: nextOrder(rows.map((r) => r.order)) },
+    });
+  });
+}
+
+export async function updateWord(
+  wordId: string,
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+  const id = idSchema.safeParse(wordId);
+  if (!id.success) return { error: MSG.notFound };
+
+  return saveItem(wordSchema, formData, async (data) => {
+    const row = await db.vocabularyWord.findUnique({
+      where: { id: id.data },
+      select: { chapterId: true },
+    });
+    if (!row) return { error: MSG.notFound };
+    const taken = await wordTaken(row.chapterId, data.word, id.data);
+    if (taken) return taken;
+    await db.vocabularyWord.update({ where: { id: id.data }, data });
+  });
+}
+
+export async function createQuestion(
+  chapterId: string,
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+  const id = idSchema.safeParse(chapterId);
+  if (!id.success) return { error: MSG.notFound };
+
+  return saveItem(questionSchema, formData, async (data) => {
+    const rows = await db.quizQuestion.findMany({
+      where: { chapterId: id.data },
+      select: { order: true },
+    });
+    await db.quizQuestion.create({
+      data: { ...data, chapterId: id.data, order: nextOrder(rows.map((r) => r.order)) },
+    });
+  });
+}
+
+export async function updateQuestion(
+  questionId: string,
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+  const id = idSchema.safeParse(questionId);
+  if (!id.success) return { error: MSG.notFound };
+
+  return saveItem(questionSchema, formData, async (data) => {
+    await db.quizQuestion.update({ where: { id: id.data }, data });
+  });
+}
+
+// Moves a sentence, word or question up/down within its chapter.
+export async function moveChapterItem(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const parsed = chapterItemMoveSchema.safeParse(formValues(formData));
+  if (!parsed.success) return;
+  const { id, kind, direction } = parsed.data;
+  const siblingsOf = { select: { id: true, order: true } } as const;
+
+  switch (kind) {
+    case "sentence": {
+      const row = await db.chapterSentence.findUnique({
+        where: { id },
+        select: { chapter: { select: { sentences: siblingsOf } } },
+      });
+      if (!row) return;
+      await moveRow(row.chapter.sentences, id, direction, (tx, rowId, order) =>
+        tx.chapterSentence.update({ where: { id: rowId }, data: { order } }),
+      );
+      break;
+    }
+    case "word": {
+      const row = await db.vocabularyWord.findUnique({
+        where: { id },
+        select: { chapter: { select: { words: siblingsOf } } },
+      });
+      if (!row) return;
+      await moveRow(row.chapter.words, id, direction, (tx, rowId, order) =>
+        tx.vocabularyWord.update({ where: { id: rowId }, data: { order } }),
+      );
+      break;
+    }
+    case "question": {
+      const row = await db.quizQuestion.findUnique({
+        where: { id },
+        select: { chapter: { select: { quizQuestions: siblingsOf } } },
+      });
+      if (!row) return;
+      await moveRow(row.chapter.quizQuestions, id, direction, (tx, rowId, order) =>
+        tx.quizQuestion.update({ where: { id: rowId }, data: { order } }),
+      );
+      break;
+    }
+  }
   refresh();
 }

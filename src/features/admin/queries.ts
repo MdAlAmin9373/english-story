@@ -1,5 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
+import { parseOptions } from "@/features/quiz/check";
 
 // Admin reads: no status filter, so drafts are included.
 // Call these only after requireAdmin(), inside a <Suspense> boundary.
@@ -57,7 +58,7 @@ export async function getAdminStoryTitle(id: string) {
 
 // Scoped to the story in the URL, so a mismatched pair is treated as not found.
 export async function getAdminChapter(storyId: string, chapterId: string) {
-  return db.chapter.findFirst({
+  const chapter = await db.chapter.findFirst({
     where: { id: chapterId, storyId },
     select: {
       id: true,
@@ -67,6 +68,42 @@ export async function getAdminChapter(storyId: string, chapterId: string) {
       requiresLogin: true,
       status: true,
       story: { select: { id: true, titleBn: true } },
+      sentences: {
+        orderBy: { order: "asc" },
+        select: { id: true, order: true, bn: true, en: true },
+      },
+      words: {
+        orderBy: { order: "asc" },
+        select: {
+          id: true,
+          order: true,
+          word: true,
+          meaningBn: true,
+          pronunciationBn: true,
+          exampleEn: true,
+          exampleBn: true,
+        },
+      },
+      quizQuestions: {
+        orderBy: { order: "asc" },
+        select: {
+          id: true,
+          order: true,
+          type: true,
+          promptBn: true,
+          promptEn: true,
+          options: true,
+          correctIndex: true,
+        },
+      },
     },
   });
+  if (!chapter) return null;
+
+  // options is stored as Json; a malformed value shows as no options so the admin can fix it.
+  const quizQuestions = chapter.quizQuestions.map((q) => ({
+    ...q,
+    options: parseOptions(q.options) ?? [],
+  }));
+  return { ...chapter, quizQuestions };
 }

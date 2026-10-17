@@ -90,3 +90,11 @@ export const moveSchema = z.object({
   id: idSchema,
   direction: z.enum(["up", "down"]),
 });
+
+// Rows inside a chapter that the editors can reorder.
+export const CHAPTER_ITEM_KINDS = ["sentence", "word", "question"] as const;
+export type ChapterItemKind = (typeof CHAPTER_ITEM_KINDS)[number];
+
+export const chapterItemMoveSchema = moveSchema.extend({
+  kind: z.enum(CHAPTER_ITEM_KINDS),
+});

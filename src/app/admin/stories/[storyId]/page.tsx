@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { moveChapter, setChapterStatus, updateStory } from "@/features/admin/actions";
 import { ConfirmSubmitButton } from "@/features/admin/components/ConfirmSubmitButton";
 import { primaryButtonClass, secondaryButtonClass } from "@/features/admin/components/fields";
+import { MoveButtons } from "@/features/admin/components/MoveButtons";
 import { StatusBadge } from "@/features/admin/components/StatusBadge";
 import { StoryForm } from "@/features/admin/components/StoryForm";
 import { getAdminStory } from "@/features/admin/queries";
@@ -82,29 +83,12 @@ async function EditStory({ params }: { params: Promise<{ storyId: string }> }) {
                     </span>
                   </Link>
                   <div className="flex shrink-0 flex-wrap items-center gap-2">
-                    <form action={moveChapter} className="flex gap-1">
-                      <input type="hidden" name="id" value={chapter.id} />
-                      <button
-                        type="submit"
-                        name="direction"
-                        value="up"
-                        disabled={i === 0}
-                        aria-label="উপরে সরান"
-                        className={secondaryButtonClass}
-                      >
-                        ↑
-                      </button>
-                      <button
-                        type="submit"
-                        name="direction"
-                        value="down"
-                        disabled={i === story.chapters.length - 1}
-                        aria-label="নিচে সরান"
-                        className={secondaryButtonClass}
-                      >
-                        ↓
-                      </button>
-                    </form>
+                    <MoveButtons
+                      action={moveChapter}
+                      id={chapter.id}
+                      isFirst={i === 0}
+                      isLast={i === story.chapters.length - 1}
+                    />
                     <form action={setChapterStatus}>
                       <input type="hidden" name="id" value={chapter.id} />
                       <input
