@@ -16,6 +16,13 @@ export const tenseKindLabel: Record<TenseKind, { bn: string; en: string }> = {
   PERFECT: { bn: "পুরাঘটিত", en: "Perfect" },
 };
 
+export const labelSeparator = " · ";
+
+// "বর্তমান · Present": Bengali first, then the English term.
+export function bilingualLabel({ bn, en }: { bn: string; en: string }): string {
+  return `${bn}${labelSeparator}${en}`;
+}
+
 export type TenseFormInput = {
   kind: TenseKind;
   time: TenseTime;

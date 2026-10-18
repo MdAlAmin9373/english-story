@@ -1,5 +1,6 @@
 import {
   buildTenseTable,
+  labelSeparator,
   tenseKindLabel,
   tenseKinds,
   tenseTimeLabel,
@@ -13,7 +14,8 @@ export function TenseTable({ word, forms }: { word: string; forms: TenseFormInpu
     <div className="overflow-x-auto rounded-lg border border-navy-800">
       <table className="w-full min-w-[36rem] border-collapse text-left text-sm">
         <caption className="sr-only">
-          <span lang="en">{word}</span> — কালের রূপ
+          <span lang="en">{word}</span> — কালের রূপ{labelSeparator}
+          <span lang="en">Tense forms</span>
         </caption>
         <thead>
           <tr className="bg-navy-950 text-ink-muted">
@@ -21,11 +23,10 @@ export function TenseTable({ word, forms }: { word: string; forms: TenseFormInpu
               কাল
             </th>
             {tenseKinds.map((kind) => (
-              <th key={kind} scope="col" className="p-2 font-medium">
-                {tenseKindLabel[kind].bn}{" "}
-                <span lang="en" className="text-xs">
-                  ({tenseKindLabel[kind].en})
-                </span>
+              <th key={kind} scope="col" className="whitespace-nowrap p-2 font-medium">
+                {tenseKindLabel[kind].bn}
+                {labelSeparator}
+                <span lang="en">{tenseKindLabel[kind].en}</span>
               </th>
             ))}
           </tr>
@@ -33,11 +34,10 @@ export function TenseTable({ word, forms }: { word: string; forms: TenseFormInpu
         <tbody>
           {rows.map((row) => (
             <tr key={row.time} className="border-t border-navy-800 align-top">
-              <th scope="row" className="p-2 font-medium text-accent">
+              <th scope="row" className="whitespace-nowrap p-2 font-medium text-accent">
                 {tenseTimeLabel[row.time].bn}
-                <span lang="en" className="block text-xs text-ink-muted">
-                  {tenseTimeLabel[row.time].en}
-                </span>
+                {labelSeparator}
+                <span lang="en">{tenseTimeLabel[row.time].en}</span>
               </th>
               {row.cells.map((cell, i) => (
                 <td key={tenseKinds[i]} className="p-2">

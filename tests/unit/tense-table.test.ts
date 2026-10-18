@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { describe, expect, test } from "vitest";
 import {
+  bilingualLabel,
   buildTenseTable,
   tenseKindLabel,
   tenseKinds,
@@ -75,8 +76,19 @@ describe("buildTenseTable", () => {
     expect(rows[2].cells[0]?.form).toBe("will fly");
   });
 
-  test("every row and column has a Bengali label", () => {
-    for (const time of tenseTimes) expect(tenseTimeLabel[time].bn).not.toBe("");
-    for (const kind of tenseKinds) expect(tenseKindLabel[kind].bn).not.toBe("");
+  test("row labels are Bengali · English", () => {
+    expect(tenseTimes.map((time) => bilingualLabel(tenseTimeLabel[time]))).toEqual([
+      "বর্তমান · Present",
+      "অতীত · Past",
+      "ভবিষ্যৎ · Future",
+    ]);
+  });
+
+  test("column labels are Bengali · English", () => {
+    expect(tenseKinds.map((kind) => bilingualLabel(tenseKindLabel[kind]))).toEqual([
+      "সাধারণ · Simple",
+      "ঘটমান · Continuous",
+      "পুরাঘটিত · Perfect",
+    ]);
   });
 });

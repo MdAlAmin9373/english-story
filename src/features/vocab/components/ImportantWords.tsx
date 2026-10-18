@@ -17,7 +17,7 @@ export async function ImportantWords({ chapterId }: { chapterId: string }) {
   return (
     <section aria-labelledby="important-words" className="flex flex-col gap-3 pt-4">
       <h2 id="important-words" className="text-xl font-bold text-ink">
-        গুরুত্বপূর্ণ শব্দ
+        গুরুত্বপূর্ণ শব্দ · <span lang="en">Important words</span>
       </h2>
 
       <ul className="grid gap-3 sm:grid-cols-2">
@@ -35,9 +35,13 @@ export async function ImportantWords({ chapterId }: { chapterId: string }) {
                 <span lang="en" className="text-lg font-semibold text-accent">
                   {w.word}
                 </span>
-                <span className="text-sm text-ink-muted">উচ্চারণ: {w.pronunciationBn}</span>
+                <span className="text-sm text-ink-muted">
+                  উচ্চারণ · <span lang="en">Pronunciation</span>: {w.pronunciationBn}
+                </span>
               </div>
-              <p className="text-ink">অর্থ: {w.meaningBn}</p>
+              <p className="text-ink">
+                অর্থ · <span lang="en">Meaning</span>: {w.meaningBn}
+              </p>
               <div className="border-l-2 border-navy-700 pl-3 text-sm">
                 <p lang="en" className="text-ink">
                   {w.exampleEn}
@@ -48,7 +52,7 @@ export async function ImportantWords({ chapterId }: { chapterId: string }) {
               {wordForms && (
                 <details className="group">
                   <summary className="cursor-pointer text-sm text-accent hover:opacity-90">
-                    কালের রূপ দেখুন
+                    কালের রূপ · <span lang="en">Tense forms</span>
                   </summary>
                   <div className="pt-3">
                     <TenseTable word={w.word} forms={wordForms} />
