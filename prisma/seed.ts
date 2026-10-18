@@ -90,6 +90,28 @@ const chapterOneWords: SeedWord[] = [
   { word: "fly", meaningBn: "ওড়া, ওড়ানো", pronunciationBn: "ফ্লাই", exampleEn: "Birds fly over the field every evening.", exampleBn: "প্রতি সন্ধ্যায় পাখিরা মাঠের ওপর দিয়ে ওড়ে।" },
 ];
 
+const chapterTwoWords: SeedWord[] = [
+  { word: "high", meaningBn: "উঁচু", pronunciationBn: "হাই", exampleEn: "The kite goes up very high.", exampleBn: "ঘুড়িটি অনেক উঁচুতে উঠে যায়।" },
+  { word: "suddenly", meaningBn: "হঠাৎ", pronunciationBn: "সাডেনলি", exampleEn: "Suddenly, the string breaks.", exampleBn: "হঠাৎ সুতাটি ছিঁড়ে যায়।" },
+  { word: "break", meaningBn: "ভাঙা, ছিঁড়ে যাওয়া", pronunciationBn: "ব্রেক", exampleEn: "The string breaks.", exampleBn: "সুতাটি ছিঁড়ে যায়।" },
+  { word: "wind", meaningBn: "বাতাস", pronunciationBn: "উইন্ড", exampleEn: "The wind carries the kite across the river.", exampleBn: "বাতাস ঘুড়িটিকে নদীর ওপারে নিয়ে যায়।" },
+  { word: "across", meaningBn: "ওপারে, পেরিয়ে", pronunciationBn: "অ্যাক্রস", exampleEn: "The wind carries the kite across the river.", exampleBn: "বাতাস ঘুড়িটিকে নদীর ওপারে নিয়ে যায়।" },
+  { word: "sad", meaningBn: "দুঃখিত", pronunciationBn: "স্যাড", exampleEn: "Ratul feels sad, but he does not give up.", exampleBn: "রাতুল দুঃখ পায়, কিন্তু সে হাল ছাড়ে না।" },
+  { word: "cross", meaningBn: "পার হওয়া", pronunciationBn: "ক্রস", exampleEn: "He crosses the bridge to the other bank.", exampleBn: "সে সেতু পার হয়ে অন্য পাড়ে যায়।" },
+  { word: "bridge", meaningBn: "সেতু", pronunciationBn: "ব্রিজ", exampleEn: "He crosses the bridge to the other bank.", exampleBn: "সে সেতু পার হয়ে অন্য পাড়ে যায়।" },
+];
+
+const chapterThreeWords: SeedWord[] = [
+  { word: "read", meaningBn: "পড়া", pronunciationBn: "রিড", exampleEn: "A girl is reading a book under the tree.", exampleBn: "গাছের নিচে একটি মেয়ে বই পড়ছে।" },
+  { word: "say", meaningBn: "বলা", pronunciationBn: "ছে", exampleEn: "Mitu says, \"Is this your kite?\"", exampleBn: "মিতু বলে, \"এটা কি তোমার ঘুড়ি?\"" },
+  { word: "nod", meaningBn: "মাথা নাড়া", pronunciationBn: "নড", exampleEn: "Ratul nods and says, \"Yes, but it is too high.\"", exampleBn: "রাতুল মাথা নেড়ে বলে, \"হ্যাঁ, কিন্তু এটা অনেক উঁচুতে।\"" },
+  { word: "bring", meaningBn: "আনা", pronunciationBn: "ব্রিং", exampleEn: "Mitu brings a long bamboo pole.", exampleBn: "মিতু একটি লম্বা বাঁশ নিয়ে আসে।" },
+  { word: "bamboo", meaningBn: "বাঁশ", pronunciationBn: "ব্যাম্বু", exampleEn: "Mitu brings a long bamboo pole.", exampleBn: "মিতু একটি লম্বা বাঁশ নিয়ে আসে।" },
+  { word: "gently", meaningBn: "আস্তে করে", pronunciationBn: "জেন্টলি", exampleEn: "Together, they gently bring the kite down.", exampleBn: "দুজনে মিলে আস্তে করে ঘুড়িটি নামায়।" },
+  { word: "together", meaningBn: "একসাথে", pronunciationBn: "টুগেদার", exampleEn: "Let's fly it together.", exampleBn: "চলো একসাথে ওড়াই।" },
+  { word: "friend", meaningBn: "বন্ধু", pronunciationBn: "ফ্রেন্ড", exampleEn: "The two of them are good friends.", exampleBn: "তারা দুজন ভালো বন্ধু।" },
+];
+
 type FormPair = [form: string, exampleEn: string];
 // Per time: [simple, continuous, perfect].
 type SeedTenses = Record<"PRESENT" | "PAST" | "FUTURE", [FormPair, FormPair, FormPair]>;
@@ -144,6 +166,74 @@ const tenseForms: Record<string, SeedTenses> = {
       ["will take", "Ratul will take the boat across the river."],
       ["will be taking", "Ratul will be taking an exam at ten."],
       ["will have taken", "Ratul will have taken his medicine by night."],
+    ],
+  },
+  break: {
+    PRESENT: [
+      ["breaks", "The string breaks."],
+      ["is breaking", "The string is breaking."],
+      ["has broken", "The string has broken."],
+    ],
+    PAST: [
+      ["broke", "The string broke."],
+      ["was breaking", "The string was breaking."],
+      ["had broken", "The string had broken."],
+    ],
+    FUTURE: [
+      ["will break", "The string will break."],
+      ["will be breaking", "The string will be breaking."],
+      ["will have broken", "The string will have broken."],
+    ],
+  },
+  cross: {
+    PRESENT: [
+      ["crosses", "He crosses the bridge."],
+      ["is crossing", "He is crossing the bridge."],
+      ["has crossed", "He has crossed the bridge."],
+    ],
+    PAST: [
+      ["crossed", "He crossed the bridge."],
+      ["was crossing", "He was crossing the bridge."],
+      ["had crossed", "He had crossed the bridge."],
+    ],
+    FUTURE: [
+      ["will cross", "He will cross the bridge."],
+      ["will be crossing", "He will be crossing the bridge."],
+      ["will have crossed", "He will have crossed the bridge."],
+    ],
+  },
+  say: {
+    PRESENT: [
+      ["says", "Mitu says hello."],
+      ["is saying", "Mitu is saying hello."],
+      ["has said", "Mitu has said hello."],
+    ],
+    PAST: [
+      ["said", "Mitu said hello."],
+      ["was saying", "Mitu was saying hello."],
+      ["had said", "Mitu had said hello."],
+    ],
+    FUTURE: [
+      ["will say", "Mitu will say hello."],
+      ["will be saying", "Mitu will be saying hello."],
+      ["will have said", "Mitu will have said hello."],
+    ],
+  },
+  bring: {
+    PRESENT: [
+      ["brings", "Mitu brings a pole."],
+      ["is bringing", "Mitu is bringing a pole."],
+      ["has brought", "Mitu has brought a pole."],
+    ],
+    PAST: [
+      ["brought", "Mitu brought a pole."],
+      ["was bringing", "Mitu was bringing a pole."],
+      ["had brought", "Mitu had brought a pole."],
+    ],
+    FUTURE: [
+      ["will bring", "Mitu will bring a pole."],
+      ["will be bringing", "Mitu will be bringing a pole."],
+      ["will have brought", "Mitu will have brought a pole."],
     ],
   },
 };
@@ -203,19 +293,133 @@ const chapterOneOrderTasks: [promptBn: string, en: string][] = [
   ["তার বাড়ির পাশে একটি নদী আছে।", "There is a river next to his house."],
 ];
 
-async function seedVocabulary(storyId: string) {
-  const chapterOne = await db.chapter.findUniqueOrThrow({
-    where: { storyId_order: { storyId, order: 1 } },
+const chapterTwoQuestions: SeedQuestion[] = [
+  {
+    type: "MULTIPLE_CHOICE",
+    promptBn: "\"bridge\" মানে কী?",
+    promptEn: "What does \"bridge\" mean?",
+    options: ["নদী", "সেতু", "আমগাছ", "বাঁশ"],
+    correctIndex: 1,
+  },
+  {
+    type: "MULTIPLE_CHOICE",
+    promptBn: "হঠাৎ সুতাটি ছিঁড়ে গেলে রাতুল কেমন বোধ করে?",
+    promptEn: "How does Ratul feel when the string suddenly breaks?",
+    options: ["খুশি", "দুঃখিত", "রাগী", "ভীত"],
+    correctIndex: 1,
+  },
+  {
+    type: "MULTIPLE_CHOICE",
+    promptBn: "কী ঘুড়িটিকে নদীর ওপারে নিয়ে যায়?",
+    promptEn: "What carries the kite across the river?",
+    options: ["রাতুল", "বাতাস", "মিতু", "সেতু"],
+    correctIndex: 1,
+  },
+  {
+    type: "FILL_GAP",
+    promptBn: "বাতাস ঘুড়িটিকে নদীর ওপারে নিয়ে যায়।",
+    promptEn: "The wind carries the kite ___ the river.",
+    options: ["across", "under", "inside", "behind"],
+    correctIndex: 0,
+  },
+  {
+    type: "FILL_GAP",
+    promptBn: "রাতুল দুঃখ পায়, কিন্তু সে হাল ছাড়ে না।",
+    promptEn: "Ratul feels ___, but he does not give up.",
+    options: ["sad", "angry", "sleepy", "hungry"],
+    correctIndex: 0,
+  },
+];
+
+const chapterThreeQuestions: SeedQuestion[] = [
+  {
+    type: "MULTIPLE_CHOICE",
+    promptBn: "মেয়েটির নাম কী?",
+    promptEn: "What is the girl's name?",
+    options: ["মিতু", "রাতুল", "রিনা", "সুমি"],
+    correctIndex: 0,
+  },
+  {
+    type: "MULTIPLE_CHOICE",
+    promptBn: "\"gently\" মানে কী?",
+    promptEn: "What does \"gently\" mean?",
+    options: ["জোরে", "আস্তে করে", "দ্রুত", "রাগ করে"],
+    correctIndex: 1,
+  },
+  {
+    type: "MULTIPLE_CHOICE",
+    promptBn: "ঘুড়িটি নামাতে মিতু কী নিয়ে আসে?",
+    promptEn: "What does Mitu bring to get the kite down?",
+    options: ["সুতা", "সিঁড়ি", "লম্বা বাঁশ", "দড়ি"],
+    correctIndex: 2,
+  },
+  {
+    type: "FILL_GAP",
+    promptBn: "মিতু একটি লম্বা বাঁশ নিয়ে আসে।",
+    promptEn: "Mitu ___ a long bamboo pole.",
+    options: ["brings", "eats", "drops", "loses"],
+    correctIndex: 0,
+  },
+  {
+    type: "FILL_GAP",
+    promptBn: "চলো একসাথে ওড়াই।",
+    promptEn: "Ratul says, \"Thank you! Let's fly it ___.\"",
+    options: ["together", "alone", "slowly", "never"],
+    correctIndex: 0,
+  },
+];
+
+const chapterTwoOrderTasks: [promptBn: string, en: string][] = [
+  ["ঘুড়িটি অনেক উঁচুতে উঠে যায়।", "The kite goes up very high."],
+  ["সে সেতু পার হয়ে অন্য পাড়ে যায়।", "He crosses the bridge to the other bank."],
+];
+
+const chapterThreeOrderTasks: [promptBn: string, en: string][] = [
+  ["তার নাম মিতু।", "Her name is Mitu."],
+  ["দুজনে মিলে আস্তে করে ঘুড়িটি নামায়।", "Together, they gently bring the kite down."],
+];
+
+// Practice content per chapter order.
+const chapterContent = [
+  { order: 1, words: chapterOneWords, questions: chapterOneQuestions, orderTasks: chapterOneOrderTasks },
+  { order: 2, words: chapterTwoWords, questions: chapterTwoQuestions, orderTasks: chapterTwoOrderTasks },
+  { order: 3, words: chapterThreeWords, questions: chapterThreeQuestions, orderTasks: chapterThreeOrderTasks },
+];
+
+// Same rules as checkQuestion in src/features/admin/validate.ts (not importable here).
+function assertQuestion(chapterOrder: number, q: SeedQuestion) {
+  const where = `Chapter ${chapterOrder}: "${q.promptEn}"`;
+  if (q.options.length < 2 || q.options.length > 6) {
+    throw new Error(`${where} needs 2 to 6 options.`);
+  }
+  if (!Number.isInteger(q.correctIndex) || q.correctIndex < 0 || q.correctIndex >= q.options.length) {
+    throw new Error(`${where} has correctIndex out of range.`);
+  }
+  if (q.type === "FILL_GAP" && q.promptEn.split("___").length !== 2) {
+    throw new Error(`${where} needs exactly one ___.`);
+  }
+}
+
+function findChapter(storyId: string, order: number) {
+  return db.chapter.findUniqueOrThrow({
+    where: { storyId_order: { storyId, order } },
     select: { id: true },
   });
+}
 
-  for (const [i, { word, ...wordData }] of chapterOneWords.entries()) {
-    const data = { order: i + 1, ...wordData };
-    await db.vocabularyWord.upsert({
-      where: { chapterId_word: { chapterId: chapterOne.id, word } },
-      create: { chapterId: chapterOne.id, word, ...data },
-      update: data,
-    });
+async function seedVocabulary(storyId: string) {
+  let wordCount = 0;
+  for (const { order, words } of chapterContent) {
+    const { id: chapterId } = await findChapter(storyId, order);
+    for (const [i, { word, ...wordData }] of words.entries()) {
+      const data = { order: i + 1, ...wordData };
+      await db.vocabularyWord.upsert({
+        where: { chapterId_word: { chapterId, word } },
+        create: { chapterId, word, ...data },
+        update: data,
+      });
+      wordCount++;
+    }
   }
 
   let formCount = 0;
@@ -233,40 +437,45 @@ async function seedVocabulary(storyId: string) {
     }
   }
 
-  console.log(`Seeded ${chapterOneWords.length} words and ${formCount} tense forms.`);
+  console.log(`Seeded ${wordCount} words and ${formCount} tense forms.`);
 }
 
 async function seedQuiz(storyId: string) {
-  const chapterOne = await db.chapter.findUniqueOrThrow({
-    where: { storyId_order: { storyId, order: 1 } },
-    select: { id: true },
-  });
-  const chapterId = chapterOne.id;
+  let questionCount = 0;
+  let taskCount = 0;
+  for (const { order: chapterOrder, questions, orderTasks } of chapterContent) {
+    const { id: chapterId } = await findChapter(storyId, chapterOrder);
 
-  for (const [i, question] of chapterOneQuestions.entries()) {
-    const order = i + 1;
-    await db.quizQuestion.upsert({
-      where: { chapterId_order: { chapterId, order } },
-      create: { chapterId, order, ...question },
-      update: question,
-    });
+    for (const [i, question] of questions.entries()) {
+      const order = i + 1;
+      await db.quizQuestion.upsert({
+        where: { chapterId_order: { chapterId, order } },
+        create: { chapterId, order, ...question },
+        update: question,
+      });
+      questionCount++;
+    }
+
+    for (const [i, [promptBn, en]] of orderTasks.entries()) {
+      const order = i + 1;
+      await db.sentenceOrderTask.upsert({
+        where: { chapterId_order: { chapterId, order } },
+        create: { chapterId, order, promptBn, en },
+        update: { promptBn, en },
+      });
+      taskCount++;
+    }
   }
 
-  for (const [i, [promptBn, en]] of chapterOneOrderTasks.entries()) {
-    const order = i + 1;
-    await db.sentenceOrderTask.upsert({
-      where: { chapterId_order: { chapterId, order } },
-      create: { chapterId, order, promptBn, en },
-      update: { promptBn, en },
-    });
-  }
-
-  console.log(
-    `Seeded ${chapterOneQuestions.length} quiz questions and ${chapterOneOrderTasks.length} ordering sentences.`,
-  );
+  console.log(`Seeded ${questionCount} quiz questions and ${taskCount} ordering sentences.`);
 }
 
 async function main() {
+  // Validate everything before writing anything.
+  for (const { order, questions } of chapterContent) {
+    for (const q of questions) assertQuestion(order, q);
+  }
+
   const { slug, ...storyData } = story;
   const savedStory = await db.story.upsert({
     where: { slug },
