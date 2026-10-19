@@ -90,6 +90,8 @@ async function moveRow(
   }
 }
 
+// A new story starts with an empty chapter 1, so the admin lands straight in its editor.
+// Both rows are created in one transaction: a duplicate slug creates neither.
 export async function createStory(
   _prev: AdminFormState,
   formData: FormData,
@@ -99,9 +101,24 @@ export async function createStory(
   const parsed = storySchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error, values);
 
-  let id: string;
+  let storyId: string;
+  let chapterId: string;
   try {
-    ({ id } = await db.story.create({ data: parsed.data, select: { id: true } }));
+    ({ storyId, chapterId } = await db.$transaction(async (tx) => {
+      const story = await tx.story.create({ data: parsed.data, select: { id: true } });
+      const chapter = await tx.chapter.create({
+        data: {
+          storyId: story.id,
+          order: 1,
+          titleBn: "অধ্যায় ১",
+          titleEn: "Chapter 1",
+          requiresLogin: false,
+          status: "DRAFT",
+        },
+        select: { id: true },
+      });
+      return { storyId: story.id, chapterId: chapter.id };
+    }));
   } catch (err) {
     if (prismaCode(err) === "P2002") {
       return { error: MSG.slugTaken, fieldErrors: { slug: [MSG.slugTaken] }, values };
@@ -109,7 +126,7 @@ export async function createStory(
     console.error("[admin] createStory failed:", (err as Error).message);
     return { error: MSG.failed, values };
   }
-  redirect(`/admin/stories/${id}`);
+  redirect(`/admin/stories/${storyId}/chapters/${chapterId}`);
 }
 
 export async function updateStory(
