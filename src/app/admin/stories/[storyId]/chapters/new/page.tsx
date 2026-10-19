@@ -32,6 +32,10 @@ async function NewChapter({ params }: { params: Promise<{ storyId: string }> }) 
         ← {story.titleBn}
       </Link>
       <h1 className="text-2xl font-bold text-ink">নতুন অধ্যায়</h1>
+      <p className="text-sm text-ink-muted">
+        &quot;অধ্যায় তৈরি করুন&quot; সফল হলেই বাক্য, শব্দ ও কুইজ প্রশ্ন যোগ করার ঘরগুলো দেখাবে। তৈরি
+        না হলে লাল রঙের ভুলটি ঠিক করে আবার চেষ্টা করুন।
+      </p>
       <div className="rounded-xl border border-navy-800 bg-navy-900 p-4 sm:p-6">
         <ChapterForm
           action={createChapter.bind(null, story.id)}

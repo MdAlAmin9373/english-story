@@ -2,11 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
 import {
+  createOrderTask,
   createQuestion,
   createSentence,
   createWord,
   moveChapterItem,
+  saveWordForms,
   updateChapter,
+  updateOrderTask,
   updateQuestion,
   updateSentence,
   updateWord,
@@ -15,14 +18,20 @@ import { ChapterForm } from "@/features/admin/components/ChapterForm";
 import { secondaryButtonClass } from "@/features/admin/components/fields";
 import { MoveButtons } from "@/features/admin/components/MoveButtons";
 import { questionTypeLabel } from "@/features/admin/constants";
+import { OrderTaskForm } from "@/features/admin/components/OrderTaskForm";
 import { QuestionForm } from "@/features/admin/components/QuestionForm";
 import { SentenceForm } from "@/features/admin/components/SentenceForm";
 import { StatusBadge } from "@/features/admin/components/StatusBadge";
+import { TenseGridForm } from "@/features/admin/components/TenseGridForm";
 import { VocabWordForm } from "@/features/admin/components/VocabWordForm";
 import { getAdminChapter } from "@/features/admin/queries";
 import type { ChapterItemKind } from "@/features/admin/schemas";
+import { countWords } from "@/features/admin/validate";
 import { requireAdmin } from "@/features/auth/session";
 import { toBnDigits } from "@/features/stories/labels";
+import { tenseKinds, tenseTimes } from "@/features/vocab/tense-table";
+
+const TENSE_CELL_COUNT = tenseTimes.length * tenseKinds.length;
 
 export default function EditChapterPage({
   params,
@@ -45,6 +54,22 @@ async function EditChapter({
   const chapter = await getAdminChapter(storyId, chapterId);
   if (!chapter) notFound();
 
+  const previewHref = `/admin/stories/${chapter.story.id}/chapters/${chapter.id}/preview`;
+  const wordsWithAllForms = chapter.words.filter(
+    (w) => (chapter.formsByWord[w.word]?.length ?? 0) >= TENSE_CELL_COUNT,
+  ).length;
+  const steps = [
+    { href: "#sentences", label: `বাক্য (${toBnDigits(chapter.sentences.length)})` },
+    { href: "#words", label: `শব্দ (${toBnDigits(chapter.words.length)})` },
+    { href: "#questions", label: `প্রশ্ন (${toBnDigits(chapter.quizQuestions.length)})` },
+    {
+      href: "#tense-forms",
+      label: `কালের রূপ (${toBnDigits(wordsWithAllForms)}/${toBnDigits(chapter.words.length)})`,
+    },
+    { href: "#order-tasks", label: `বাক্য সাজানো (${toBnDigits(chapter.orderTasks.length)})` },
+    { href: previewHref, label: "প্রিভিউ" },
+  ];
+
   return (
     <>
       <Link
@@ -58,14 +83,27 @@ async function EditChapter({
         <div className="flex flex-wrap items-center gap-2">
           <h1 className="text-2xl font-bold text-ink">{chapter.titleBn}</h1>
           <StatusBadge status={chapter.status} />
-          <Link
-            href={`/admin/stories/${chapter.story.id}/chapters/${chapter.id}/preview`}
-            className={`${secondaryButtonClass} ml-auto`}
-          >
+          <Link href={previewHref} className={`${secondaryButtonClass} ml-auto`}>
             প্রিভিউ
           </Link>
         </div>
       </header>
+
+      {/* Fill a chapter in this order; each step jumps to its section below. */}
+      <nav
+        aria-label="অধ্যায় তৈরির ধাপ"
+        className="rounded-xl border border-navy-800 bg-navy-900 p-3"
+      >
+        <ol className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+          {steps.map((step, i) => (
+            <li key={step.href}>
+              <Link href={step.href} className="text-ink-muted hover:text-accent">
+                <span className="text-accent">{toBnDigits(i + 1)}.</span> {step.label}
+              </Link>
+            </li>
+          ))}
+        </ol>
+      </nav>
 
       <section className="rounded-xl border border-navy-800 bg-navy-900 p-4 sm:p-6">
         <ChapterForm
@@ -76,8 +114,11 @@ async function EditChapter({
       </section>
 
       <EditorSection
-        title="বাক্য জোড়া"
+        id="sentences"
+        step={1}
+        title="বাক্য"
         count={chapter.sentences.length}
+        emptyText="এখনও কোনো বাক্য যোগ করা হয়নি।"
         addTitle="নতুন বাক্য জোড়া"
         addForm={
           <SentenceForm
@@ -112,8 +153,11 @@ async function EditChapter({
       </EditorSection>
 
       <EditorSection
-        title="গুরুত্বপূর্ণ শব্দ"
+        id="words"
+        step={2}
+        title="শব্দ"
         count={chapter.words.length}
+        emptyText="এখনও কোনো শব্দ যোগ করা হয়নি।"
         addTitle="নতুন শব্দ"
         addForm={
           <VocabWordForm action={createWord.bind(null, chapter.id)} submitLabel="শব্দ যোগ করুন" />
@@ -127,14 +171,34 @@ async function EditChapter({
             index={i}
             total={all.length}
             preview={
-              <span>
-                <span lang="en" className="font-semibold text-ink">
-                  {word.word}
-                </span>{" "}
-                <span className="text-ink-muted">
-                  ({word.pronunciationBn}) — {word.meaningBn}
+              <>
+                <span>
+                  <span lang="en" className="font-semibold text-ink">
+                    {word.word}
+                  </span>{" "}
+                  <span className="text-ink-muted">
+                    ({word.pronunciationBn}) — {word.meaningBn}
+                  </span>
                 </span>
-              </span>
+                <span className="text-xs text-ink-muted">
+                  কালের রূপ: {toBnDigits(chapter.formsByWord[word.word]?.length ?? 0)}/
+                  {toBnDigits(TENSE_CELL_COUNT)}
+                </span>
+              </>
+            }
+            extra={
+              <details>
+                <summary className="cursor-pointer text-sm text-accent">
+                  কালের রূপ (৯টি ঘর)
+                </summary>
+                <div className="pt-3">
+                  <TenseGridForm
+                    action={saveWordForms.bind(null, word.id)}
+                    word={word.word}
+                    forms={chapter.formsByWord[word.word] ?? []}
+                  />
+                </div>
+              </details>
             }
           >
             <VocabWordForm
@@ -147,14 +211,22 @@ async function EditChapter({
       </EditorSection>
 
       <EditorSection
-        title="কুইজ প্রশ্ন"
+        id="questions"
+        step={3}
+        title="প্রশ্ন"
         count={chapter.quizQuestions.length}
+        emptyText="এখনও কোনো প্রশ্ন যোগ করা হয়নি।"
         addTitle="নতুন প্রশ্ন"
         addForm={
-          <QuestionForm
-            action={createQuestion.bind(null, chapter.id)}
-            submitLabel="প্রশ্ন যোগ করুন"
-          />
+          <>
+            <p className="text-sm text-ink-muted">
+              ধরন বেছে নিন: {questionTypeLabel.MULTIPLE_CHOICE} বা {questionTypeLabel.FILL_GAP}।
+            </p>
+            <QuestionForm
+              action={createQuestion.bind(null, chapter.id)}
+              submitLabel="প্রশ্ন যোগ করুন"
+            />
+          </>
         }
       >
         {chapter.quizQuestions.map((question, i, all) => (
@@ -185,30 +257,95 @@ async function EditChapter({
           </ItemCard>
         ))}
       </EditorSection>
+
+      {/* The grids themselves live under each word (step ২); this block keeps step ৪ visible. */}
+      <section id="tense-forms" className="flex scroll-mt-4 flex-col gap-2">
+        <h2 className="text-xl font-semibold text-ink">
+          <span className="text-accent">{toBnDigits(4)}.</span> কালের রূপ{" "}
+          <span className="text-base text-ink-muted">
+            ({toBnDigits(wordsWithAllForms)}/{toBnDigits(chapter.words.length)})
+          </span>
+        </h2>
+        <p className="text-ink-muted">
+          {chapter.words.length === 0
+            ? "প্রথমে শব্দ যোগ করুন — প্রতিটি শব্দের নিচে কালের রূপের ঘর দেখাবে।"
+            : `ওপরের প্রতিটি শব্দের নিচে "কালের রূপ (${toBnDigits(TENSE_CELL_COUNT)}টি ঘর)" খুলে পূরণ করুন।`}
+        </p>
+      </section>
+
+      <EditorSection
+        id="order-tasks"
+        step={5}
+        title="বাক্য সাজানো"
+        count={chapter.orderTasks.length}
+        emptyText="এখনও কোনো বাক্য সাজানোর কাজ যোগ করা হয়নি।"
+        addTitle="নতুন বাক্য সাজানোর কাজ"
+        addForm={
+          <OrderTaskForm
+            action={createOrderTask.bind(null, chapter.id)}
+            submitLabel="কাজ যোগ করুন"
+          />
+        }
+      >
+        {chapter.orderTasks.map((task, i, all) => (
+          <ItemCard
+            key={task.id}
+            kind="orderTask"
+            id={task.id}
+            index={i}
+            total={all.length}
+            preview={
+              <>
+                <span className="text-ink">{task.promptBn}</span>
+                <span lang="en" className="text-sm text-ink-muted">
+                  {task.en}
+                </span>
+                <span className="text-xs text-ink-muted">
+                  {toBnDigits(countWords(task.en))}টি শব্দ
+                </span>
+              </>
+            }
+          >
+            <OrderTaskForm
+              action={updateOrderTask.bind(null, task.id)}
+              task={task}
+              submitLabel="সংরক্ষণ করুন"
+            />
+          </ItemCard>
+        ))}
+      </EditorSection>
     </>
   );
 }
 
+// Heading, list (or empty line) and add form; the add form always renders, even with no rows.
 function EditorSection({
+  id,
+  step,
   title,
   count,
+  emptyText,
   addTitle,
   addForm,
   children,
 }: {
+  id: string;
+  step: number;
   title: string;
   count: number;
+  emptyText: string;
   addTitle: string;
   addForm: ReactNode;
   children: ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-3">
+    <section id={id} className="flex scroll-mt-4 flex-col gap-3">
       <h2 className="text-xl font-semibold text-ink">
-        {title} <span className="text-base text-ink-muted">({toBnDigits(count)})</span>
+        <span className="text-accent">{toBnDigits(step)}.</span> {title}{" "}
+        <span className="text-base text-ink-muted">({toBnDigits(count)})</span>
       </h2>
       {count === 0 ? (
-        <p className="text-ink-muted">এখনো কিছু যোগ করা হয়নি।</p>
+        <p className="text-ink-muted">{emptyText}</p>
       ) : (
         <ol className="flex flex-col gap-2">{children}</ol>
       )}
@@ -221,12 +358,14 @@ function EditorSection({
 }
 
 // One row: a short preview with ↑/↓, and the edit form folded inside <details>.
+// `extra` adds more folded sections below (e.g. a word's tense grid).
 function ItemCard({
   kind,
   id,
   index,
   total,
   preview,
+  extra,
   children,
 }: {
   kind: ChapterItemKind;
@@ -234,6 +373,7 @@ function ItemCard({
   index: number;
   total: number;
   preview: ReactNode;
+  extra?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -255,6 +395,7 @@ function ItemCard({
         <summary className="cursor-pointer text-sm text-accent">সম্পাদনা</summary>
         <div className="pt-3">{children}</div>
       </details>
+      {extra}
     </li>
   );
 }

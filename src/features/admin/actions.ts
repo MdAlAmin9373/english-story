@@ -11,10 +11,12 @@ import {
   chapterSchema,
   idSchema,
   moveSchema,
+  orderTaskSchema,
   questionSchema,
   sentenceSchema,
   statusSchema,
   storySchema,
+  tenseGridSchema,
   wordSchema,
 } from "./schemas";
 import { nextOrder, swapTarget } from "./validate";
@@ -391,7 +393,72 @@ export async function updateQuestion(
   });
 }
 
-// Moves a sentence, word or question up/down within its chapter.
+// Saves the 3x3 tense grid of a vocabulary word. WordForm rows are keyed by the
+// base-form word string and shared by every chapter that uses the word. The word
+// is read from the database, never from the form. Empty cells are skipped, not deleted.
+export async function saveWordForms(
+  wordId: string,
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+  const id = idSchema.safeParse(wordId);
+  if (!id.success) return { error: MSG.notFound };
+
+  return saveItem(tenseGridSchema, formData, async (cells) => {
+    const row = await db.vocabularyWord.findUnique({
+      where: { id: id.data },
+      select: { word: true },
+    });
+    if (!row) return { error: MSG.notFound };
+
+    await db.$transaction(
+      cells.map(({ time, kind, form, exampleEn }) =>
+        db.wordForm.upsert({
+          where: { word_time_kind: { word: row.word, time, kind } },
+          create: { word: row.word, time, kind, form, exampleEn },
+          update: { form, exampleEn },
+        }),
+      ),
+    );
+  });
+}
+
+export async function createOrderTask(
+  chapterId: string,
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+  const id = idSchema.safeParse(chapterId);
+  if (!id.success) return { error: MSG.notFound };
+
+  return saveItem(orderTaskSchema, formData, async (data) => {
+    const rows = await db.sentenceOrderTask.findMany({
+      where: { chapterId: id.data },
+      select: { order: true },
+    });
+    await db.sentenceOrderTask.create({
+      data: { ...data, chapterId: id.data, order: nextOrder(rows.map((r) => r.order)) },
+    });
+  });
+}
+
+export async function updateOrderTask(
+  taskId: string,
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+  const id = idSchema.safeParse(taskId);
+  if (!id.success) return { error: MSG.notFound };
+
+  return saveItem(orderTaskSchema, formData, async (data) => {
+    await db.sentenceOrderTask.update({ where: { id: id.data }, data });
+  });
+}
+
+// Moves a sentence, word, question or ordering task up/down within its chapter.
 export async function moveChapterItem(formData: FormData): Promise<void> {
   await requireAdmin();
   const parsed = chapterItemMoveSchema.safeParse(formValues(formData));
@@ -430,6 +497,17 @@ export async function moveChapterItem(formData: FormData): Promise<void> {
       if (!row) return;
       await moveRow(row.chapter.quizQuestions, id, direction, (tx, rowId, order) =>
         tx.quizQuestion.update({ where: { id: rowId }, data: { order } }),
+      );
+      break;
+    }
+    case "orderTask": {
+      const row = await db.sentenceOrderTask.findUnique({
+        where: { id },
+        select: { chapter: { select: { orderTasks: siblingsOf } } },
+      });
+      if (!row) return;
+      await moveRow(row.chapter.orderTasks, id, direction, (tx, rowId, order) =>
+        tx.sentenceOrderTask.update({ where: { id: rowId }, data: { order } }),
       );
       break;
     }

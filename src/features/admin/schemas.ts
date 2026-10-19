@@ -3,7 +3,10 @@ import { toBnDigits } from "@/features/stories/labels";
 import { GENRES, QUESTION_TYPES, STATUSES } from "./constants";
 import {
   SLUG_PATTERN,
+  TENSE_FIELD_NAMES,
+  checkOrderSentence,
   checkQuestion,
+  checkTenseGrid,
   normalizeSlug,
   normalizeWord,
   parseOptionLines,
@@ -81,6 +84,29 @@ export const questionSchema = z
     if (error) ctx.addIssue({ code: "custom", message: error });
   });
 
+// The 3x3 tense grid: 18 optional inputs in, the list of filled cells out.
+export const tenseGridSchema = z
+  .object(
+    Object.fromEntries(TENSE_FIELD_NAMES.map((name) => [name, z.string().max(1000).optional()])),
+  )
+  .transform((raw, ctx) => {
+    const { cells, errors } = checkTenseGrid(raw);
+    for (const [name, message] of Object.entries(errors)) {
+      ctx.addIssue({ code: "custom", message, path: [name] });
+    }
+    return Object.keys(errors).length === 0 ? cells : z.NEVER;
+  });
+
+export const orderTaskSchema = z
+  .object({
+    promptBn: text(200),
+    en: text(300),
+  })
+  .superRefine((task, ctx) => {
+    const error = checkOrderSentence(task.en);
+    if (error) ctx.addIssue({ code: "custom", message: error, path: ["en"] });
+  });
+
 export const statusSchema = z.object({
   id: idSchema,
   status: z.enum(STATUSES),
@@ -92,7 +118,7 @@ export const moveSchema = z.object({
 });
 
 // Rows inside a chapter that the editors can reorder.
-export const CHAPTER_ITEM_KINDS = ["sentence", "word", "question"] as const;
+export const CHAPTER_ITEM_KINDS = ["sentence", "word", "question", "orderTask"] as const;
 export type ChapterItemKind = (typeof CHAPTER_ITEM_KINDS)[number];
 
 export const chapterItemMoveSchema = moveSchema.extend({

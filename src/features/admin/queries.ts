@@ -1,6 +1,7 @@
 import "server-only";
 import { db } from "@/lib/db";
 import { parseOptions } from "@/features/quiz/check";
+import type { TenseFormInput } from "@/features/vocab/tense-table";
 
 // Admin reads: no status filter, so drafts are included.
 // Call these only after requireAdmin(), inside a <Suspense> boundary.
@@ -98,7 +99,7 @@ export async function getAdminChapter(storyId: string, chapterId: string) {
       },
       orderTasks: {
         orderBy: { order: "asc" },
-        select: { id: true, promptBn: true, en: true },
+        select: { id: true, order: true, promptBn: true, en: true },
       },
     },
   });
@@ -109,5 +110,19 @@ export async function getAdminChapter(storyId: string, chapterId: string) {
     ...q,
     options: parseOptions(q.options) ?? [],
   }));
-  return { ...chapter, quizQuestions };
+
+  // Tense forms are keyed by the word string (shared across chapters): one query for all words.
+  const forms =
+    chapter.words.length === 0
+      ? []
+      : await db.wordForm.findMany({
+          where: { word: { in: chapter.words.map((w) => w.word) } },
+          select: { word: true, kind: true, time: true, form: true, exampleEn: true },
+        });
+  const formsByWord: Record<string, TenseFormInput[]> = {};
+  for (const { word, ...form } of forms) {
+    (formsByWord[word] ??= []).push(form);
+  }
+
+  return { ...chapter, quizQuestions, formsByWord };
 }
