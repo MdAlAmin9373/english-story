@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
 import {
+  createNote,
   createOrderTask,
   createQuestion,
   createSentence,
@@ -9,6 +10,7 @@ import {
   moveChapterItem,
   saveWordForms,
   updateChapter,
+  updateNote,
   updateOrderTask,
   updateQuestion,
   updateSentence,
@@ -17,6 +19,7 @@ import {
 import { ChapterForm } from "@/features/admin/components/ChapterForm";
 import { secondaryButtonClass } from "@/features/admin/components/fields";
 import { MoveButtons } from "@/features/admin/components/MoveButtons";
+import { NoteForm } from "@/features/admin/components/NoteForm";
 import { questionTypeLabel } from "@/features/admin/constants";
 import { OrderTaskForm } from "@/features/admin/components/OrderTaskForm";
 import { QuestionForm } from "@/features/admin/components/QuestionForm";
@@ -28,7 +31,7 @@ import { getAdminChapter } from "@/features/admin/queries";
 import type { ChapterItemKind } from "@/features/admin/schemas";
 import { countWords } from "@/features/admin/validate";
 import { requireAdmin } from "@/features/auth/session";
-import { toBnDigits } from "@/features/stories/labels";
+import { noteKindLabel, toBnDigits } from "@/features/stories/labels";
 import { tenseKinds, tenseTimes } from "@/features/vocab/tense-table";
 
 const TENSE_CELL_COUNT = tenseTimes.length * tenseKinds.length;
@@ -68,6 +71,7 @@ async function EditChapter({
     },
     { href: "#order-tasks", label: `বাক্য সাজানো (${toBnDigits(chapter.orderTasks.length)})` },
     { href: previewHref, label: "প্রিভিউ" },
+    { href: "#notes", label: `উচ্চারণ ও ব্যাকরণ (${toBnDigits(chapter.notes.length)})` },
   ];
 
   return (
@@ -309,6 +313,41 @@ async function EditChapter({
             <OrderTaskForm
               action={updateOrderTask.bind(null, task.id)}
               task={task}
+              submitLabel="সংরক্ষণ করুন"
+            />
+          </ItemCard>
+        ))}
+      </EditorSection>
+
+      <EditorSection
+        id="notes"
+        step={7}
+        title="উচ্চারণ ও ব্যাকরণ"
+        count={chapter.notes.length}
+        emptyText="এখনও কোনো উচ্চারণ বা ব্যাকরণের নোট যোগ করা হয়নি।"
+        addTitle="নতুন নোট"
+        addForm={<NoteForm action={createNote.bind(null, chapter.id)} submitLabel="নোট যোগ করুন" />}
+      >
+        {chapter.notes.map((note, i, all) => (
+          <ItemCard
+            key={note.id}
+            kind="note"
+            id={note.id}
+            index={i}
+            total={all.length}
+            preview={
+              <>
+                <span className="text-xs text-accent">{noteKindLabel[note.kind]}</span>
+                <span className="text-ink">{note.titleBn}</span>
+                <span lang="en" className="text-sm text-ink-muted">
+                  {note.titleEn}
+                </span>
+              </>
+            }
+          >
+            <NoteForm
+              action={updateNote.bind(null, note.id)}
+              note={note}
               submitLabel="সংরক্ষণ করুন"
             />
           </ItemCard>

@@ -101,6 +101,18 @@ export async function getAdminChapter(storyId: string, chapterId: string) {
         orderBy: { order: "asc" },
         select: { id: true, order: true, promptBn: true, en: true },
       },
+      notes: {
+        orderBy: { order: "asc" },
+        select: {
+          id: true,
+          order: true,
+          kind: true,
+          titleBn: true,
+          titleEn: true,
+          bodyBn: true,
+          exampleEn: true,
+        },
+      },
     },
   });
   if (!chapter) return null;
