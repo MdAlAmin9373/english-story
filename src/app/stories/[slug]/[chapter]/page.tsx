@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { loginPathWithNext } from "@/features/auth/next-path";
 import { getCurrentUser } from "@/features/auth/session";
+import { ChapterNotes } from "@/features/notes/components/ChapterNotes";
 import { ChapterQuiz } from "@/features/quiz/components/ChapterQuiz";
 import { canReadChapter } from "@/features/stories/access";
 import { toBnDigits } from "@/features/stories/labels";
@@ -62,6 +63,10 @@ async function ChapterReader({
 
       <Suspense fallback={<p className="text-ink-muted">শব্দ লোড হচ্ছে…</p>}>
         <ImportantWords chapterId={chapter.id} />
+      </Suspense>
+
+      <Suspense fallback={<p className="text-ink-muted">নোট লোড হচ্ছে…</p>}>
+        <ChapterNotes chapterId={chapter.id} />
       </Suspense>
 
       {user ? (

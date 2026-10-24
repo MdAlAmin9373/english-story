@@ -5,6 +5,7 @@ import { QuizPreview } from "@/features/admin/components/QuizPreview";
 import { StatusBadge } from "@/features/admin/components/StatusBadge";
 import { getAdminChapter } from "@/features/admin/queries";
 import { requireAdmin } from "@/features/auth/session";
+import { ChapterNotes } from "@/features/notes/components/ChapterNotes";
 import { SentencePairs } from "@/features/stories/components/SentencePairs";
 import { toBnDigits } from "@/features/stories/labels";
 import { ImportantWords } from "@/features/vocab/components/ImportantWords";
@@ -64,6 +65,10 @@ async function ChapterPreview({
 
       <Suspense fallback={<p className="text-ink-muted">শব্দ লোড হচ্ছে…</p>}>
         <ImportantWords chapterId={chapter.id} />
+      </Suspense>
+
+      <Suspense fallback={<p className="text-ink-muted">নোট লোড হচ্ছে…</p>}>
+        <ChapterNotes chapterId={chapter.id} />
       </Suspense>
 
       <QuizPreview questions={chapter.quizQuestions} orderTasks={chapter.orderTasks} />
