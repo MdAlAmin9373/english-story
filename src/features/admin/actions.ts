@@ -11,6 +11,7 @@ import {
   chapterSchema,
   idSchema,
   moveSchema,
+  noteSchema,
   orderTaskSchema,
   questionSchema,
   sentenceSchema,
@@ -475,7 +476,41 @@ export async function updateOrderTask(
   });
 }
 
-// Moves a sentence, word, question or ordering task up/down within its chapter.
+export async function createNote(
+  chapterId: string,
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+  const id = idSchema.safeParse(chapterId);
+  if (!id.success) return { error: MSG.notFound };
+
+  return saveItem(noteSchema, formData, async (data) => {
+    const rows = await db.chapterNote.findMany({
+      where: { chapterId: id.data },
+      select: { order: true },
+    });
+    await db.chapterNote.create({
+      data: { ...data, chapterId: id.data, order: nextOrder(rows.map((r) => r.order)) },
+    });
+  });
+}
+
+export async function updateNote(
+  noteId: string,
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+  const id = idSchema.safeParse(noteId);
+  if (!id.success) return { error: MSG.notFound };
+
+  return saveItem(noteSchema, formData, async (data) => {
+    await db.chapterNote.update({ where: { id: id.data }, data });
+  });
+}
+
+// Moves a sentence, word, question, ordering task or note up/down within its chapter.
 export async function moveChapterItem(formData: FormData): Promise<void> {
   await requireAdmin();
   const parsed = chapterItemMoveSchema.safeParse(formValues(formData));
@@ -525,6 +560,17 @@ export async function moveChapterItem(formData: FormData): Promise<void> {
       if (!row) return;
       await moveRow(row.chapter.orderTasks, id, direction, (tx, rowId, order) =>
         tx.sentenceOrderTask.update({ where: { id: rowId }, data: { order } }),
+      );
+      break;
+    }
+    case "note": {
+      const row = await db.chapterNote.findUnique({
+        where: { id },
+        select: { chapter: { select: { notes: siblingsOf } } },
+      });
+      if (!row) return;
+      await moveRow(row.chapter.notes, id, direction, (tx, rowId, order) =>
+        tx.chapterNote.update({ where: { id: rowId }, data: { order } }),
       );
       break;
     }

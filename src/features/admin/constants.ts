@@ -1,4 +1,4 @@
-import type { Genre, PublishStatus, QuestionType } from "@prisma/client";
+import type { Genre, NoteKind, PublishStatus, QuestionType } from "@prisma/client";
 
 // Enum values are listed here (not imported from @prisma/client) so client
 // forms and tests stay free of server code; `satisfies` keeps them in sync.
@@ -15,6 +15,7 @@ export const QUESTION_TYPES = [
   "MULTIPLE_CHOICE",
   "FILL_GAP",
 ] as const satisfies readonly QuestionType[];
+export const NOTE_KINDS = ["PRONUNCIATION", "GRAMMAR"] as const satisfies readonly NoteKind[];
 
 // Kept here, not in a "use client" file, so server components can read it too.
 export const questionTypeLabel: Record<QuestionType, string> = {

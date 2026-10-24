@@ -1,12 +1,16 @@
 import { z } from "zod";
 import { toBnDigits } from "@/features/stories/labels";
-import { GENRES, QUESTION_TYPES, STATUSES } from "./constants";
+import { GENRES, NOTE_KINDS, QUESTION_TYPES, STATUSES } from "./constants";
 import {
+  MAX_NOTE_BODY_LENGTH,
+  MAX_NOTE_EXAMPLE_LENGTH,
+  MAX_NOTE_TITLE_LENGTH,
   SLUG_PATTERN,
   TENSE_FIELD_NAMES,
   checkOrderSentence,
   checkQuestion,
   checkTenseGrid,
+  normalizeNoteBody,
   normalizeSlug,
   normalizeWord,
   parseOptionLines,
@@ -107,6 +111,19 @@ export const orderTaskSchema = z
     if (error) ctx.addIssue({ code: "custom", message: error, path: ["en"] });
   });
 
+// The body is normalized before the length check, so line endings and extra
+// blank lines do not count towards the limit.
+export const noteSchema = z.object({
+  kind: z.enum(NOTE_KINDS, "ধরন বেছে নিন।"),
+  titleBn: text(MAX_NOTE_TITLE_LENGTH),
+  titleEn: text(MAX_NOTE_TITLE_LENGTH),
+  bodyBn: z
+    .string("এই ঘরটি পূরণ করুন।")
+    .transform(normalizeNoteBody)
+    .pipe(text(MAX_NOTE_BODY_LENGTH)),
+  exampleEn: text(MAX_NOTE_EXAMPLE_LENGTH),
+});
+
 export const statusSchema = z.object({
   id: idSchema,
   status: z.enum(STATUSES),
@@ -118,7 +135,7 @@ export const moveSchema = z.object({
 });
 
 // Rows inside a chapter that the editors can reorder.
-export const CHAPTER_ITEM_KINDS = ["sentence", "word", "question", "orderTask"] as const;
+export const CHAPTER_ITEM_KINDS = ["sentence", "word", "question", "orderTask", "note"] as const;
 export type ChapterItemKind = (typeof CHAPTER_ITEM_KINDS)[number];
 
 export const chapterItemMoveSchema = moveSchema.extend({

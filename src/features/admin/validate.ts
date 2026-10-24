@@ -183,3 +183,20 @@ export function checkOrderSentence(en: string): string | null {
   }
   return null;
 }
+
+// ---- Pronunciation & grammar notes ----
+
+export const MAX_NOTE_TITLE_LENGTH = 120;
+export const MAX_NOTE_BODY_LENGTH = 1500;
+export const MAX_NOTE_EXAMPLE_LENGTH = 300;
+
+// Notes are shown as plain text with line breaks kept: trims every line,
+// squashes repeated spaces, and keeps at most one blank line between paragraphs.
+export function normalizeNoteBody(text: string): string {
+  return text
+    .split(/\r\n?|\n/)
+    .map((line) => line.trim().replace(/[ \t]+/g, " "))
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}

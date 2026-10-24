@@ -105,6 +105,7 @@ model Chapter {
   quizQuestions QuizQuestion[]
   orderTasks    SentenceOrderTask[]
   progress      UserProgress[]
+  notes         ChapterNote[]
 
   // Also serves lookups by storyId (leading column).
   @@unique([storyId, order])
@@ -210,6 +211,27 @@ model SentenceOrderTask {
   promptBn  String
   en        String
 
+  @@unique([chapterId, order])
+}
+
+enum NoteKind {
+  PRONUNCIATION
+  GRAMMAR
+}
+
+// Pronunciation and grammar notes shown under a chapter's words; rendered as plain text.
+model ChapterNote {
+  id        String   @id @default(cuid())
+  chapterId String
+  chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  order     Int
+  kind      NoteKind
+  titleBn   String
+  titleEn   String
+  bodyBn    String
+  exampleEn String
+
+  // Also serves lookups by chapterId (leading column).
   @@unique([chapterId, order])
 }
 

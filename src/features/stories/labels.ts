@@ -1,4 +1,4 @@
-import type { Genre } from "@prisma/client";
+import type { Genre, NoteKind } from "@prisma/client";
 
 export const genreLabel: Record<Genre, string> = {
   FOLKTALE: "লোককথা",
@@ -7,6 +7,12 @@ export const genreLabel: Record<Genre, string> = {
   FRIENDSHIP: "বন্ধুত্ব",
   MYSTERY: "রহস্য",
   DAILY_LIFE: "দৈনন্দিন জীবন",
+};
+
+// Shared by the reader's notes panel and the admin editor.
+export const noteKindLabel: Record<NoteKind, string> = {
+  PRONUNCIATION: "উচ্চারণ",
+  GRAMMAR: "ব্যাকরণ",
 };
 
 const bnDigits = "০১২৩৪৫৬৭৮৯";
