@@ -1,8 +1,13 @@
+import { isEnglishCell, parseNoteBody } from "@/features/notes/note-body";
 import { getChapterNotes } from "@/features/notes/queries";
 import { noteKindLabel } from "@/features/stories/labels";
 
+// Each column is at least this wide, so wide tables scroll sideways on phones.
+const TABLE_COLUMN_REM = 7;
+
 // Reads the database: render inside <Suspense>, after the chapter access check.
-// Note text is plain React text (never HTML); whitespace-pre-line keeps its line breaks.
+// Note text is plain React text (never HTML); whitespace-pre-line keeps paragraph
+// line breaks, and "a | b | c" lines become tables (see note-body.ts).
 export async function ChapterNotes({ chapterId }: { chapterId: string }) {
   const notes = await getChapterNotes(chapterId);
   if (notes.length === 0) return null;
@@ -28,7 +33,15 @@ export async function ChapterNotes({ chapterId }: { chapterId: string }) {
                 {note.titleEn}
               </p>
             </div>
-            <p className="whitespace-pre-line break-words text-ink">{note.bodyBn}</p>
+            {parseNoteBody(note.bodyBn).map((block, i) =>
+              block.type === "paragraph" ? (
+                <p key={i} className="whitespace-pre-line break-words text-ink">
+                  {block.text}
+                </p>
+              ) : (
+                <NoteTable key={i} header={block.header} rows={block.rows} />
+              ),
+            )}
             <p lang="en" className="border-l-2 border-navy-700 pl-3 text-sm text-ink">
               {note.exampleEn}
             </p>
@@ -36,5 +49,49 @@ export async function ChapterNotes({ chapterId }: { chapterId: string }) {
         ))}
       </ul>
     </section>
+  );
+}
+
+function NoteTable({ header, rows }: { header: string[] | null; rows: string[][] }) {
+  const columns = header?.length ?? rows[0]?.length ?? 0;
+
+  return (
+    <div className="overflow-x-auto rounded-lg border border-navy-700">
+      <table
+        className="w-full border-collapse text-left text-sm"
+        style={{ minWidth: `${columns * TABLE_COLUMN_REM}rem` }}
+      >
+        {header && (
+          <thead className="bg-navy-950">
+            <tr>
+              {header.map((cell, c) => (
+                <th
+                  key={c}
+                  scope="col"
+                  className="border-b border-navy-700 px-3 py-2 font-semibold text-accent"
+                >
+                  {cell}
+                </th>
+              ))}
+            </tr>
+          </thead>
+        )}
+        <tbody>
+          {rows.map((row, r) => (
+            <tr key={r} className="border-t border-navy-800 first:border-t-0">
+              {row.map((cell, c) => (
+                <td
+                  key={c}
+                  lang={isEnglishCell(cell) ? "en" : undefined}
+                  className="px-3 py-2 align-top text-ink"
+                >
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
