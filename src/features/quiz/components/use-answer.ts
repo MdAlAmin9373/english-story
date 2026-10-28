@@ -34,7 +34,7 @@ export function useAnswer(questionId: string, solved: SolvedQuestion | null) {
         setChosen(null);
       } else if (res.correct) {
         setResult({ correct: true, correctIndex: res.correctIndex, points: res.points, restored: false });
-        markQuestion(questionId);
+        markQuestion(questionId, res.points);
       } else {
         setResult({ correct: false, attempt: res.attempt });
       }

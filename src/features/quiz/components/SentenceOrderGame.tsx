@@ -136,7 +136,7 @@ export function SentenceOrderGame({
         setError(res.error);
       } else if (res.correct) {
         setResult({ correct: true, points: res.points, restored: false });
-        markTask(taskId);
+        markTask(taskId, res.points);
       } else {
         setResult({ correct: false, attempt: res.attempt });
       }

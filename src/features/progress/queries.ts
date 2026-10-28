@@ -6,10 +6,12 @@ import {
   chapterLock,
   chapterRequirements,
   chapterScore,
+  pointsForAttempt,
   storyProgress,
   storyScore,
   summarizeAttempts,
   type ChapterItems,
+  type Summary,
 } from "./progress";
 
 // Database reads: call these inside a <Suspense> boundary.
@@ -49,9 +51,19 @@ export async function getChapterStatus(chapterId: string, userId: string) {
   return {
     requirements: chapterRequirements(items, quiz, order),
     score: chapterScore(items, quiz, order),
-    quiz, // per question: attempts and first-correct attempt number
-    order, // per task
+    // Points per solved item (id → points), to seed the live client state.
+    solvedQuestions: solvedPoints(items.questionIds, quiz),
+    solvedTasks: solvedPoints(items.taskIds, order),
   };
+}
+
+function solvedPoints(ids: readonly string[], summary: Summary): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const id of ids) {
+    const first = summary.get(id)?.firstCorrect;
+    if (first != null) out[id] = pointsForAttempt(first);
+  }
+  return out;
 }
 
 export type ChapterStatus = Awaited<ReturnType<typeof getChapterStatus>>;

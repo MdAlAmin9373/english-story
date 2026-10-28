@@ -1,55 +1,74 @@
 "use client";
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import { MAX_POINTS } from "@/features/progress/progress";
 import { toBnDigits } from "@/features/stories/labels";
 
+type Count = { total: number; solved: number };
 type Progress = {
-  questions: { total: number; solved: number };
-  tasks: { total: number; solved: number };
+  questions: Count;
+  tasks: Count;
   done: boolean;
-  markQuestion: (id: string) => void;
-  markTask: (id: string) => void;
+  points: number;
+  maxPoints: number;
+  firstTry: number;
+  markQuestion: (id: string, points: number) => void;
+  markTask: (id: string, points: number) => void;
 };
 
 const ProgressContext = createContext<Progress | null>(null);
 
-// Live solved counts for the chapter's practice, seeded from stored attempts on the server.
-// Display only: completeChapter re-checks everything on the server.
+// Points per solved item (id → points). Seeded from stored attempts on the server and
+// updated only with points returned by the server actions. Display only: completeChapter
+// re-checks everything on the server.
+type Solved = Record<string, number>;
+
+function add(prev: Solved, id: string, points: number): Solved {
+  return id in prev ? prev : { ...prev, [id]: points };
+}
+
+// Wraps the chapter's score card and its quiz, so both always show the same numbers.
 export function QuizProgressProvider({
   questionTotal,
   taskTotal,
-  solvedQuestionIds,
-  solvedTaskIds,
+  solvedQuestions,
+  solvedTasks,
   children,
 }: {
   questionTotal: number;
   taskTotal: number;
-  solvedQuestionIds: string[];
-  solvedTaskIds: string[];
+  solvedQuestions: Solved;
+  solvedTasks: Solved;
   children: ReactNode;
 }) {
-  const [questions, setQuestions] = useState(() => new Set(solvedQuestionIds));
-  const [tasks, setTasks] = useState(() => new Set(solvedTaskIds));
+  const [questions, setQuestions] = useState(solvedQuestions);
+  const [tasks, setTasks] = useState(solvedTasks);
 
   const markQuestion = useCallback(
-    (id: string) => setQuestions((s) => (s.has(id) ? s : new Set(s).add(id))),
+    (id: string, points: number) => setQuestions((s) => add(s, id, points)),
     [],
   );
   const markTask = useCallback(
-    (id: string) => setTasks((s) => (s.has(id) ? s : new Set(s).add(id))),
+    (id: string, points: number) => setTasks((s) => add(s, id, points)),
     [],
   );
 
-  const value = useMemo<Progress>(
-    () => ({
-      questions: { total: questionTotal, solved: questions.size },
-      tasks: { total: taskTotal, solved: tasks.size },
-      done: questions.size >= questionTotal && tasks.size >= taskTotal,
+  const value = useMemo<Progress>(() => {
+    const all = [...Object.values(questions), ...Object.values(tasks)];
+    const q = Object.keys(questions).length;
+    const t = Object.keys(tasks).length;
+    return {
+      questions: { total: questionTotal, solved: q },
+      tasks: { total: taskTotal, solved: t },
+      done: q >= questionTotal && t >= taskTotal,
+      points: all.reduce((sum, p) => sum + p, 0),
+      maxPoints: (questionTotal + taskTotal) * MAX_POINTS,
+      // Only a first-attempt solve earns full points.
+      firstTry: all.filter((p) => p === MAX_POINTS).length,
       markQuestion,
       markTask,
-    }),
-    [questionTotal, taskTotal, questions, tasks, markQuestion, markTask],
-  );
+    };
+  }, [questionTotal, taskTotal, questions, tasks, markQuestion, markTask]);
 
   return <ProgressContext.Provider value={value}>{children}</ProgressContext.Provider>;
 }
