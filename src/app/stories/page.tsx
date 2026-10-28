@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { getCurrentUser } from "@/features/auth/session";
+import { getAllStoriesProgress } from "@/features/progress/queries";
 import { genreLabel, levelLabel, toBnDigits } from "@/features/stories/labels";
 import { getPublishedStories } from "@/features/stories/queries";
 
@@ -20,9 +22,11 @@ export default function StoriesPage() {
   );
 }
 
-// Reads the database, so it streams in behind Suspense.
+// Reads the session cookie and the database, so it streams in behind Suspense.
 async function StoryList() {
-  const stories = await getPublishedStories();
+  const [stories, user] = await Promise.all([getPublishedStories(), getCurrentUser()]);
+  const progress = user ? await getAllStoriesProgress(user.id) : [];
+  const percent = new Map(progress.map((s) => [s.slug, s.progress.percent]));
 
   if (stories.length === 0) {
     return <p className="text-ink-muted">এখনো কোনো গল্প প্রকাশিত হয়নি।</p>;
@@ -36,7 +40,22 @@ async function StoryList() {
             href={`/stories/${story.slug}`}
             className="flex h-full flex-col gap-2 rounded-xl border border-navy-800 bg-navy-900 p-5 hover:border-accent"
           >
-            <h2 className="text-lg font-semibold text-ink">{story.titleBn}</h2>
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="text-lg font-semibold text-ink">{story.titleBn}</h2>
+              {percent.has(story.slug) && (
+                <span
+                  aria-label={`অগ্রগতি ${toBnDigits(percent.get(story.slug) ?? 0)}%`}
+                  className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                    percent.get(story.slug) === 100
+                      ? "bg-emerald-400/15 text-emerald-300"
+                      : "bg-accent/15 text-accent"
+                  }`}
+                >
+                  {percent.get(story.slug) === 100 ? "✓ " : ""}
+                  {toBnDigits(percent.get(story.slug) ?? 0)}%
+                </span>
+              )}
+            </div>
             <p lang="en" className="text-sm text-ink-muted">
               {story.titleEn}
             </p>
