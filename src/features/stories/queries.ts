@@ -49,7 +49,7 @@ export async function getChapter(slug: string, order: number) {
       titleBn: true,
       titleEn: true,
       requiresLogin: true,
-      story: { select: { slug: true, titleBn: true } },
+      story: { select: { id: true, slug: true, titleBn: true } },
       sentences: {
         orderBy: { order: "asc" },
         select: { order: true, bn: true, en: true },
@@ -58,19 +58,21 @@ export async function getChapter(slug: string, order: number) {
   });
   if (!chapter) return null;
 
-  // Neighbouring published chapters for prev/next links (orders may have gaps).
-  const [prev, next] = await Promise.all([
-    db.chapter.findFirst({
-      where: { order: { lt: order }, status: "PUBLISHED", story: { slug } },
-      orderBy: { order: "desc" },
-      select: { order: true },
-    }),
-    db.chapter.findFirst({
-      where: { order: { gt: order }, status: "PUBLISHED", story: { slug } },
-      orderBy: { order: "asc" },
-      select: { order: true },
-    }),
-  ]);
+  // All published orders, for prev/next links (orders may have gaps), position and the lock.
+  const rows = await db.chapter.findMany({
+    where: { storyId: chapter.story.id, status: "PUBLISHED" },
+    orderBy: { order: "asc" },
+    select: { order: true },
+  });
+  const publishedOrders = rows.map((r) => r.order);
+  const index = publishedOrders.indexOf(order);
 
-  return { ...chapter, prevOrder: prev?.order ?? null, nextOrder: next?.order ?? null };
+  return {
+    ...chapter,
+    prevOrder: publishedOrders[index - 1] ?? null,
+    nextOrder: publishedOrders[index + 1] ?? null,
+    position: index + 1,
+    total: publishedOrders.length,
+    publishedOrders,
+  };
 }

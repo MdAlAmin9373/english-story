@@ -24,6 +24,7 @@ model User {
   updatedAt    DateTime       @updatedAt
   sessions     Session[]
   quizAttempts QuizAttempt[]
+  orderTaskAttempts OrderTaskAttempt[]
   progress     UserProgress[]
 }
 
@@ -210,8 +211,24 @@ model SentenceOrderTask {
   order     Int
   promptBn  String
   en        String
+  attempts  OrderTaskAttempt[]
 
   @@unique([chapterId, order])
+}
+
+// One row per "যাচাই করুন" press; scoring uses the attempt number of the first correct one.
+model OrderTaskAttempt {
+  id        String            @id @default(cuid())
+  userId    String
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskId    String
+  task      SentenceOrderTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  correct   Boolean
+  createdAt DateTime          @default(now())
+
+  // Per-user scoring reads (attempt order matters).
+  @@index([userId, taskId, createdAt])
+  @@index([taskId])
 }
 
 enum NoteKind {
