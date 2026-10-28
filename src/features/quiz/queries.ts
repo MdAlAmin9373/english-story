@@ -40,6 +40,29 @@ export async function getChapterQuiz(chapterId: string, userId: string) {
 
 export type ChapterQuiz = Awaited<ReturnType<typeof getChapterQuiz>>;
 
+// Answers for items the user has ALREADY solved (ids computed on the server from stored
+// attempts), so a reloaded page can show them. Never call this with unsolved ids.
+export async function getSolvedAnswers(questionIds: string[], taskIds: string[]) {
+  const [questions, tasks] = await Promise.all([
+    questionIds.length
+      ? db.quizQuestion.findMany({
+          where: { id: { in: questionIds } },
+          select: { id: true, correctIndex: true },
+        })
+      : [],
+    taskIds.length
+      ? db.sentenceOrderTask.findMany({
+          where: { id: { in: taskIds } },
+          select: { id: true, en: true },
+        })
+      : [],
+  ]);
+  return {
+    correctIndex: new Map(questions.map((q) => [q.id, q.correctIndex])),
+    answer: new Map(tasks.map((t) => [t.id, t.en])),
+  };
+}
+
 export async function getUserProgress(userId: string) {
   const [completed, correct] = await Promise.all([
     db.userProgress.findMany({

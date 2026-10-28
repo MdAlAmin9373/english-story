@@ -1,3 +1,5 @@
+import { attemptLabel, pointsGainedLabel, scoreLabel } from "@/features/progress/labels";
+import { MAX_POINTS } from "@/features/progress/progress";
 import type { AnswerState } from "./use-answer";
 
 export function OptionList({
@@ -13,12 +15,14 @@ export function OptionList({
   pending: boolean;
   onChoose: (index: number) => void;
 }) {
+  const solved = result?.correct === true;
+
   return (
     <ul className="grid gap-2 sm:grid-cols-2">
       {options.map((option, i) => {
         let tone = "border-navy-700 hover:border-accent";
-        if (result && i === result.correctIndex) tone = "border-emerald-400 bg-emerald-400/10";
-        else if (result && i === chosen) tone = "border-red-400 bg-red-400/10";
+        if (result?.correct && i === result.correctIndex) tone = "border-emerald-400 bg-emerald-400/10";
+        else if (result && !result.correct && i === chosen) tone = "border-red-400 bg-red-400/10";
         else if (i === chosen) tone = "border-accent";
 
         return (
@@ -27,7 +31,7 @@ export function OptionList({
               type="button"
               lang="en"
               onClick={() => onChoose(i)}
-              disabled={result !== null || pending}
+              disabled={solved || pending}
               aria-pressed={i === chosen}
               className={`min-h-11 w-full rounded-lg border px-4 py-2 text-left text-ink transition-colors disabled:cursor-default ${tone}`}
             >
@@ -40,14 +44,19 @@ export function OptionList({
   );
 }
 
+// Shared by question cards and the ordering game.
+export type Feedback =
+  | { correct: true; points: number; restored: boolean }
+  | { correct: false; attempt: number };
+
 export function AnswerFeedback({
   result,
-  answer,
+  retryHint,
   error,
   pending,
 }: {
-  result: { correct: boolean } | null;
-  answer: string | null;
+  result: Feedback | null;
+  retryHint: string;
   error: string | null;
   pending?: boolean;
 }) {
@@ -55,19 +64,17 @@ export function AnswerFeedback({
     <div role="status" aria-live="polite" className="min-h-6 text-sm">
       {pending && <p className="text-ink-muted">যাচাই হচ্ছে…</p>}
       {error && <p className="text-red-300">{error}</p>}
-      {result?.correct && <p className="font-semibold text-emerald-300">✓ ঠিক আছে!</p>}
-      {result && !result.correct && (
+      {!pending && result?.correct && (
+        <p className="font-semibold text-emerald-300">
+          {result.restored
+            ? `✓ সমাধান হয়েছে · ${scoreLabel(result.points, MAX_POINTS)}`
+            : `✓ সঠিক · ${pointsGainedLabel(result.points)}`}
+        </p>
+      )}
+      {!pending && result && !result.correct && (
         <p>
-          <span className="font-semibold text-red-300">✗ ভুল হয়েছে</span>
-          {answer && (
-            <span className="text-ink-muted">
-              {" "}
-              — সঠিক উত্তর:{" "}
-              <span lang="en" className="text-ink">
-                {answer}
-              </span>
-            </span>
-          )}
+          <span className="font-semibold text-red-300">✗ ভুল · {attemptLabel(result.attempt)}</span>
+          <span className="text-ink-muted"> — {retryHint}</span>
         </p>
       )}
     </div>

@@ -2,7 +2,7 @@
 
 import { toBnDigits } from "@/features/stories/labels";
 import { AnswerFeedback, OptionList } from "./AnswerParts";
-import { useAnswer } from "./use-answer";
+import { useAnswer, type SolvedQuestion } from "./use-answer";
 
 export function ChoiceCard({
   number,
@@ -10,14 +10,16 @@ export function ChoiceCard({
   promptBn,
   promptEn,
   options,
+  solved,
 }: {
   number: number;
   questionId: string;
   promptBn: string;
   promptEn: string;
   options: string[];
+  solved: SolvedQuestion | null;
 }) {
-  const { chosen, result, error, pending, choose } = useAnswer(questionId);
+  const { chosen, result, error, pending, choose } = useAnswer(questionId, solved);
 
   return (
     <article className="flex flex-col gap-3 rounded-xl border border-navy-800 bg-navy-900 p-4">
@@ -37,7 +39,7 @@ export function ChoiceCard({
       />
       <AnswerFeedback
         result={result}
-        answer={result ? options[result.correctIndex] : null}
+        retryHint="অন্য একটি উত্তর বেছে আবার চেষ্টা করুন"
         error={error}
         pending={pending}
       />

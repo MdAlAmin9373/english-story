@@ -2,7 +2,7 @@
 
 import { toBnDigits } from "@/features/stories/labels";
 import { AnswerFeedback, OptionList } from "./AnswerParts";
-import { useAnswer } from "./use-answer";
+import { useAnswer, type SolvedQuestion } from "./use-answer";
 
 const BLANK = "___";
 
@@ -12,17 +12,23 @@ export function FillGapCard({
   promptBn,
   promptEn,
   options,
+  solved,
 }: {
   number: number;
   questionId: string;
   promptBn: string;
   promptEn: string; // contains "___" where the word goes
   options: string[];
+  solved: SolvedQuestion | null;
 }) {
-  const { chosen, result, error, pending, choose } = useAnswer(questionId);
+  const { chosen, result, error, pending, choose } = useAnswer(questionId, solved);
   const [before, ...rest] = promptEn.split(BLANK);
   const after = rest.join(BLANK);
-  const filled = result ? options[result.correctIndex] : chosen !== null ? options[chosen] : null;
+  const filled = result?.correct
+    ? options[result.correctIndex]
+    : chosen !== null
+      ? options[chosen]
+      : null;
 
   return (
     <article className="flex flex-col gap-3 rounded-xl border border-navy-800 bg-navy-900 p-4">
@@ -50,7 +56,7 @@ export function FillGapCard({
       />
       <AnswerFeedback
         result={result}
-        answer={result ? options[result.correctIndex] : null}
+        retryHint="অন্য একটি শব্দ বেছে আবার চেষ্টা করুন"
         error={error}
         pending={pending}
       />

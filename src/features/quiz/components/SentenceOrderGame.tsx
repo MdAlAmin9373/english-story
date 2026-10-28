@@ -1,41 +1,73 @@
 "use client";
 
 import { useRef, useState, useTransition, type PointerEvent } from "react";
-import { checkOrder, type OrderResult } from "../actions";
-import { AnswerFeedback } from "./AnswerParts";
+import { checkOrder } from "../actions";
+import { tokenize } from "../check";
+import { AnswerFeedback, type Feedback } from "./AnswerParts";
+import { useQuizProgress } from "./QuizProgress";
 
 type Zone = "answer" | "bank";
 type Drag = { index: number; startX: number; startY: number; dx: number; dy: number; moved: boolean };
+export type SolvedTask = { answer: string; points: number };
 
 // Movement (px) before a press counts as a drag instead of a tap.
 const DRAG_THRESHOLD = 6;
 
+// For a task solved earlier: put the shuffled chips back in the answer's order.
+function placeInOrder(tokens: string[], answer: string): number[] {
+  const free = tokens.map((_, i) => i);
+  const out: number[] = [];
+  for (const word of tokenize(answer)) {
+    const at = free.findIndex((i) => tokens[i] === word);
+    if (at === -1) return [];
+    out.push(free[at]);
+    free.splice(at, 1);
+  }
+  return free.length === 0 ? out : [];
+}
+
 // Words are chips: drag them with mouse or touch (Pointer Events), or tap/press Enter to move.
+// After a wrong check the user rearranges and checks again (unlimited retries).
 export function SentenceOrderGame({
   taskId,
   promptBn,
   tokens,
+  solved,
 }: {
   taskId: string;
   promptBn: string;
   tokens: string[];
+  solved: SolvedTask | null;
 }) {
-  const [placed, setPlaced] = useState<number[]>([]); // token indexes in the answer row
+  // token indexes in the answer row
+  const [placed, setPlaced] = useState<number[]>(() =>
+    solved ? placeInOrder(tokens, solved.answer) : [],
+  );
   const [drag, setDrag] = useState<Drag | null>(null);
-  const [result, setResult] = useState<Extract<OrderResult, { ok: true }> | null>(null);
+  const [result, setResult] = useState<Feedback | null>(
+    solved ? { correct: true, points: solved.points, restored: true } : null,
+  );
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const { markTask } = useQuizProgress();
 
   const answerRef = useRef<HTMLDivElement>(null);
   const bankRef = useRef<HTMLDivElement>(null);
   const chipRefs = useRef(new Map<number, HTMLButtonElement>());
   const suppressClick = useRef(false);
 
-  const locked = result !== null || pending;
+  const isSolved = result?.correct === true;
+  const locked = isSolved || pending;
   const bank = tokens.map((_, i) => i).filter((i) => !placed.includes(i));
 
+  // Any change after a wrong check clears the red state, ready for the next try.
+  function edit(update: (p: number[]) => number[]) {
+    setPlaced(update);
+    if (result && !result.correct) setResult(null);
+  }
+
   function toggle(index: number) {
-    setPlaced((p) => (p.includes(index) ? p.filter((i) => i !== index) : [...p, index]));
+    edit((p) => (p.includes(index) ? p.filter((i) => i !== index) : [...p, index]));
   }
 
   function inside(el: HTMLElement | null, x: number, y: number) {
@@ -55,13 +87,13 @@ export function SentenceOrderGame({
 
   function drop(index: number, x: number, y: number) {
     if (inside(answerRef.current, x, y)) {
-      setPlaced((p) => {
+      edit((p) => {
         const rest = p.filter((i) => i !== index);
         const at = insertionIndex(rest, x, y);
         return [...rest.slice(0, at), index, ...rest.slice(at)];
       });
     } else if (inside(bankRef.current, x, y)) {
-      setPlaced((p) => p.filter((i) => i !== index));
+      edit((p) => p.filter((i) => i !== index));
     }
   }
 
@@ -100,15 +132,15 @@ export function SentenceOrderGame({
     setError(null);
     startTransition(async () => {
       const res = await checkOrder({ taskId, tokens: placed.map((i) => tokens[i]) });
-      if (res.ok) setResult(res);
-      else setError(res.error);
+      if (!res.ok) {
+        setError(res.error);
+      } else if (res.correct) {
+        setResult({ correct: true, points: res.points, restored: false });
+        markTask(taskId);
+      } else {
+        setResult({ correct: false, attempt: res.attempt });
+      }
     });
-  }
-
-  function reset() {
-    setPlaced([]);
-    setResult(null);
-    setError(null);
   }
 
   function chip(index: number, zone: Zone) {
@@ -171,40 +203,30 @@ export function SentenceOrderGame({
         {bank.map((i) => chip(i, "bank"))}
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {result ? (
+      {!isSolved && (
+        <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={reset}
-            className="min-h-11 rounded-lg border border-navy-700 px-4 py-2 text-ink hover:border-accent"
+            onClick={check}
+            disabled={pending || bank.length > 0 || result !== null}
+            className="min-h-11 rounded-lg bg-accent px-4 py-2 font-semibold text-navy-950 disabled:opacity-50"
           >
-            আবার খেলুন
+            যাচাই করুন
           </button>
-        ) : (
-          <>
-            <button
-              type="button"
-              onClick={check}
-              disabled={pending || bank.length > 0}
-              className="min-h-11 rounded-lg bg-accent px-4 py-2 font-semibold text-navy-950 disabled:opacity-50"
-            >
-              যাচাই করুন
-            </button>
-            <button
-              type="button"
-              onClick={() => setPlaced([])}
-              disabled={pending || placed.length === 0}
-              className="min-h-11 rounded-lg border border-navy-700 px-4 py-2 text-ink hover:border-accent disabled:opacity-50"
-            >
-              সব সরান
-            </button>
-          </>
-        )}
-      </div>
+          <button
+            type="button"
+            onClick={() => edit(() => [])}
+            disabled={pending || placed.length === 0}
+            className="min-h-11 rounded-lg border border-navy-700 px-4 py-2 text-ink hover:border-accent disabled:opacity-50"
+          >
+            সব সরান
+          </button>
+        </div>
+      )}
 
       <AnswerFeedback
         result={result}
-        answer={result?.answer ?? null}
+        retryHint="শব্দগুলো সরিয়ে আবার সাজান, তারপর যাচাই করুন"
         error={error}
         pending={pending}
       />
