@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
+import { THEME_INIT_SCRIPT } from "@/features/theme/init-script";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -9,8 +10,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="bn" className="h-full antialiased">
+    // suppressHydrationWarning: the inline script may set data-theme before React hydrates.
+    <html lang="bn" className="h-full antialiased" suppressHydrationWarning>
       <head>
+        {/* Static constant string, nothing interpolated: the only allowed dangerouslySetInnerHTML. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
