@@ -139,16 +139,25 @@ export function ThemeSwitcher() {
         ref={buttonRef}
         type="button"
         aria-label="থিম বদলান"
+        title="থিম বদলান"
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
         onClick={() => (open ? setOpen(false) : openMenu("checked"))}
         onKeyDown={onButtonKeyDown}
-        className="grid size-8 place-items-center rounded-lg border border-line-strong text-sm font-semibold text-ink hover:border-accent"
+        className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-line-strong px-3 text-sm font-semibold whitespace-nowrap text-ink hover:border-accent"
       >
-        <span aria-hidden lang="en">
-          Aa
-        </span>
+        {/* Contrast icon: circle outline with the left half filled. */}
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          viewBox="0 0 16 16"
+          className="size-4 shrink-0"
+        >
+          <circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M8 1.5a6.5 6.5 0 0 0 0 13z" fill="currentColor" />
+        </svg>
+        <span aria-hidden>থিম</span>
       </button>
       {open && (
         <div

@@ -18,17 +18,18 @@ export async function HeaderAuth() {
   }
 
   // Convenience link only: /admin itself is protected by requireAdmin().
+  // Hidden on phones so the header fits at 360px.
   return (
     <div className="flex items-center gap-3">
       {user.role === "ADMIN" && (
-        <Link href="/admin" className="text-sm text-accent hover:underline">
+        <Link href="/admin" className="hidden text-sm text-accent hover:underline sm:inline">
           অ্যাডমিন
         </Link>
       )}
       <form action={logout}>
         <button
           type="submit"
-          className="rounded-lg border border-line-strong px-3 py-1.5 text-sm text-ink hover:border-accent"
+          className="h-8 rounded-lg border border-line-strong px-3 py-1.5 text-sm text-ink hover:border-accent"
         >
           লগআউট
         </button>

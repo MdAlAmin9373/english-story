@@ -5,8 +5,9 @@ import { ThemeSwitcher } from "@/features/theme/components/ThemeSwitcher";
 
 // Items without href are placeholders until those routes exist;
 // they are hidden on phones to leave room for the login button.
-const navItems: { label: string; href?: string }[] = [
-  { label: "হোম", href: "/" },
+// হোম is also hidden on phones (the logo links home) so the header fits at 360px.
+const navItems: { label: string; href?: string; hideOnPhone?: boolean }[] = [
+  { label: "হোম", href: "/", hideOnPhone: true },
   { label: "গল্প", href: "/stories" },
   { label: "শব্দভান্ডার" },
   { label: "কুইজ" },
@@ -24,7 +25,7 @@ export function SiteHeader() {
             <ul className="flex items-center gap-3 text-sm text-ink-muted sm:gap-6 sm:text-base">
               {navItems.map((item) =>
                 item.href ? (
-                  <li key={item.label}>
+                  <li key={item.label} className={item.hideOnPhone ? "hidden sm:block" : undefined}>
                     <Link href={item.href} className="hover:text-accent">
                       {item.label}
                     </Link>
