@@ -15,7 +15,7 @@ export function SentencePairs({
         {sentences.map((sentence) => (
           <li
             key={sentence.order}
-            className="grid gap-2 rounded-xl border border-navy-800 bg-navy-900 p-4 sm:grid-cols-2 sm:gap-4"
+            className="grid gap-2 rounded-xl border border-line bg-surface p-4 sm:grid-cols-2 sm:gap-4"
           >
             <p className="text-lg text-ink">{sentence.bn}</p>
             <p lang="en" className="text-ink-muted sm:text-lg">

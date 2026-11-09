@@ -13,7 +13,7 @@ const navItems: { label: string; href?: string }[] = [
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-10 border-b border-navy-800 bg-navy-900/95 backdrop-blur">
+    <header className="sticky top-0 z-10 border-b border-line bg-surface/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
         <Link href="/" className="shrink-0 text-lg font-bold text-accent">
           English Story

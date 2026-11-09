@@ -35,7 +35,7 @@ export function QuizPreview({
         <ol className="flex flex-col gap-3">
           {questions.map((q, i) => (
             <li key={q.id}>
-              <article className="flex flex-col gap-3 rounded-xl border border-navy-800 bg-navy-900 p-4">
+              <article className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4">
                 <header className="flex flex-col gap-1">
                   <p className="text-xs text-accent">
                     প্রশ্ন {toBnDigits(i + 1)} · {instruction[q.type]}
@@ -52,13 +52,13 @@ export function QuizPreview({
                       lang="en"
                       className={
                         j === q.correctIndex
-                          ? "rounded-lg border border-emerald-400/60 bg-emerald-400/10 px-3 py-2 text-ink"
-                          : "rounded-lg border border-navy-700 px-3 py-2 text-ink"
+                          ? "rounded-lg border border-success-strong/60 bg-success-strong/10 px-3 py-2 text-ink"
+                          : "rounded-lg border border-line-strong px-3 py-2 text-ink"
                       }
                     >
                       {option}
                       {j === q.correctIndex && (
-                        <span lang="bn" className="ml-2 text-sm text-emerald-300">
+                        <span lang="bn" className="ml-2 text-sm text-success">
                           ✓ সঠিক উত্তর
                         </span>
                       )}
@@ -75,7 +75,7 @@ export function QuizPreview({
         <ul className="flex flex-col gap-3">
           {orderTasks.map((t) => (
             <li key={t.id}>
-              <article className="flex flex-col gap-3 rounded-xl border border-navy-800 bg-navy-900 p-4">
+              <article className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4">
                 <header className="flex flex-col gap-1">
                   <p className="text-xs text-accent">শব্দ সাজিয়ে বাক্য বানান</p>
                   <p className="text-ink">{t.promptBn}</p>
@@ -83,12 +83,12 @@ export function QuizPreview({
                 {/* Same seeded order the reader gets. */}
                 <div lang="en" className="flex flex-wrap gap-2">
                   {seededShuffle(tokenize(t.en), t.id).map((token, j) => (
-                    <span key={j} className="rounded-lg border border-navy-700 px-3 py-1.5 text-ink">
+                    <span key={j} className="rounded-lg border border-line-strong px-3 py-1.5 text-ink">
                       {token}
                     </span>
                   ))}
                 </div>
-                <p className="text-sm text-emerald-300">
+                <p className="text-sm text-success">
                   ✓ সঠিক বাক্য: <span lang="en">{t.en}</span>
                 </p>
               </article>

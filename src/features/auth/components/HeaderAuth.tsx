@@ -10,7 +10,7 @@ export async function HeaderAuth() {
     return (
       <Link
         href="/login"
-        className="rounded-lg bg-accent px-3 py-1.5 text-sm font-semibold text-navy-950 hover:opacity-90"
+        className="rounded-lg bg-accent px-3 py-1.5 text-sm font-semibold text-on-accent hover:opacity-90"
       >
         লগইন
       </Link>
@@ -28,7 +28,7 @@ export async function HeaderAuth() {
       <form action={logout}>
         <button
           type="submit"
-          className="rounded-lg border border-navy-700 px-3 py-1.5 text-sm text-ink hover:border-accent"
+          className="rounded-lg border border-line-strong px-3 py-1.5 text-sm text-ink hover:border-accent"
         >
           লগআউট
         </button>

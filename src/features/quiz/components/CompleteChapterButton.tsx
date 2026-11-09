@@ -20,7 +20,7 @@ export function CompleteChapterButton({
 
   if (done) {
     return (
-      <p role="status" className="font-semibold text-emerald-300">
+      <p role="status" className="font-semibold text-success">
         ✓ অধ্যায় সম্পন্ন হয়েছে
       </p>
     );
@@ -44,7 +44,7 @@ export function CompleteChapterButton({
         onClick={complete}
         disabled={pending || !progress.done}
         aria-describedby={reason ? "complete-reason" : undefined}
-        className="min-h-11 rounded-lg bg-accent px-5 py-2 font-semibold text-navy-950 disabled:cursor-not-allowed disabled:opacity-50"
+        className="min-h-11 rounded-lg bg-accent px-5 py-2 font-semibold text-on-accent disabled:cursor-not-allowed disabled:opacity-50"
       >
         {pending ? "সংরক্ষণ হচ্ছে…" : "অধ্যায় শেষ"}
       </button>
@@ -54,7 +54,7 @@ export function CompleteChapterButton({
         </p>
       )}
       {error && (
-        <p role="alert" className="text-sm text-red-300">
+        <p role="alert" className="text-sm text-danger">
           {error}
         </p>
       )}

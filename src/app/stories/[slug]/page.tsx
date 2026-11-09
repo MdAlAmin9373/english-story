@@ -59,7 +59,7 @@ async function StoryDetails({ params }: { params: Promise<{ slug: string }> }) {
               <li key={chapter.order}>
                 <Link
                   href={`/stories/${story.slug}/${chapter.order}`}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-navy-800 bg-navy-900 p-4 hover:border-accent"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface p-4 hover:border-accent"
                 >
                   <span className="flex flex-col">
                     <span className="text-ink">
@@ -70,7 +70,7 @@ async function StoryDetails({ params }: { params: Promise<{ slug: string }> }) {
                     </span>
                   </span>
                   {chapter.requiresLogin ? (
-                    <span className="shrink-0 rounded-full border border-navy-700 px-2 py-0.5 text-xs text-ink-muted">
+                    <span className="shrink-0 rounded-full border border-line-strong px-2 py-0.5 text-xs text-ink-muted">
                       লগইন প্রয়োজন
                     </span>
                   ) : (
@@ -108,7 +108,7 @@ function CourseOutline({ story }: { story: StoryProgressDetail }) {
 
   return (
     <section aria-labelledby="course-outline" className="flex flex-col gap-4">
-      <div className="flex flex-col gap-3 rounded-xl border border-navy-800 bg-navy-900 p-4">
+      <div className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-sm">
           <p className="text-ink">
             {scoreLabel(progress.completed, progress.total)} অধ্যায় শেষ
@@ -124,7 +124,7 @@ function CourseOutline({ story }: { story: StoryProgressDetail }) {
         {main && (
           <Link
             href={main.href}
-            className="self-start rounded-lg bg-accent px-5 py-2 font-semibold text-navy-950 hover:opacity-90"
+            className="self-start rounded-lg bg-accent px-5 py-2 font-semibold text-on-accent hover:opacity-90"
           >
             {main.label}
           </Link>
@@ -158,7 +158,7 @@ function CourseOutline({ story }: { story: StoryProgressDetail }) {
               <li key={chapter.order}>
                 <div
                   aria-label={`অধ্যায় ${toBnDigits(chapter.order)}: ${chapter.titleBn} — লক করা, আগে অধ্যায় ${toBnDigits(chapter.lock.requiredOrder)} শেষ করুন`}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-navy-800 bg-navy-950 p-4 opacity-60"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-line bg-page p-4 opacity-60"
                 >
                   {title}
                   <span aria-hidden="true" className="shrink-0 text-lg">
@@ -173,12 +173,12 @@ function CourseOutline({ story }: { story: StoryProgressDetail }) {
             <li key={chapter.order}>
               <Link
                 href={`${base}/${chapter.order}`}
-                className="flex items-center justify-between gap-3 rounded-xl border border-navy-800 bg-navy-900 p-4 hover:border-accent"
+                className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface p-4 hover:border-accent"
               >
                 {title}
                 <span className="flex shrink-0 flex-col items-end gap-1">
                   {chapter.completed ? (
-                    <span className="rounded-full bg-emerald-400/15 px-2 py-0.5 text-xs font-semibold text-emerald-300">
+                    <span className="rounded-full bg-success-strong/15 px-2 py-0.5 text-xs font-semibold text-success">
                       ✓ শেষ
                     </span>
                   ) : (

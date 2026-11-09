@@ -34,7 +34,7 @@ async function ChapterPreview({
 
   return (
     <>
-      <div className="flex flex-col gap-2 rounded-xl border-2 border-accent bg-navy-900 p-4">
+      <div className="flex flex-col gap-2 rounded-xl border-2 border-accent bg-surface p-4">
         <p className="font-bold text-accent">খসড়া প্রিভিউ</p>
         <p className="flex flex-wrap items-center gap-2 text-sm text-ink-muted">
           গল্প: <StatusBadge status={chapter.story.status} />

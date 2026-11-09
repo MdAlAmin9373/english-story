@@ -96,7 +96,7 @@ async function EditChapter({
       {/* Fill a chapter in this order; each step jumps to its section below. */}
       <nav
         aria-label="অধ্যায় তৈরির ধাপ"
-        className="rounded-xl border border-navy-800 bg-navy-900 p-3"
+        className="rounded-xl border border-line bg-surface p-3"
       >
         <ol className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
           {steps.map((step, i) => (
@@ -109,7 +109,7 @@ async function EditChapter({
         </ol>
       </nav>
 
-      <section className="rounded-xl border border-navy-800 bg-navy-900 p-4 sm:p-6">
+      <section className="rounded-xl border border-line bg-surface p-4 sm:p-6">
         <ChapterForm
           action={updateChapter.bind(null, chapter.id)}
           chapter={chapter}
@@ -247,7 +247,7 @@ async function EditChapter({
                 <span lang="en" className="text-sm text-ink-muted">
                   {question.promptEn}
                 </span>
-                <span className="text-sm text-emerald-300">
+                <span className="text-sm text-success">
                   ✓ {question.options[question.correctIndex] ?? "—"}
                 </span>
               </>
@@ -388,7 +388,7 @@ function EditorSection({
       ) : (
         <ol className="flex flex-col gap-2">{children}</ol>
       )}
-      <div className="flex flex-col gap-3 rounded-xl border border-dashed border-navy-700 p-4">
+      <div className="flex flex-col gap-3 rounded-xl border border-dashed border-line-strong p-4">
         <h3 className="font-semibold text-accent">+ {addTitle}</h3>
         {addForm}
       </div>
@@ -416,7 +416,7 @@ function ItemCard({
   children: ReactNode;
 }) {
   return (
-    <li className="flex flex-col gap-2 rounded-xl border border-navy-800 bg-navy-900 p-3">
+    <li className="flex flex-col gap-2 rounded-xl border border-line bg-surface p-3">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 gap-2">
           <span className="text-sm text-accent">{toBnDigits(index + 1)}.</span>

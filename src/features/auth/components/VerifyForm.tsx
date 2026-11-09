@@ -25,17 +25,17 @@ export function VerifyForm({ next }: { next: string }) {
         placeholder="123456"
         aria-invalid={state.error ? true : undefined}
         aria-describedby={state.error ? "code-error" : undefined}
-        className="rounded-lg border border-navy-700 bg-navy-900 px-4 py-2 text-center text-xl tracking-[0.4em] text-ink outline-none focus:border-accent"
+        className="rounded-lg border border-line-strong bg-surface px-4 py-2 text-center text-xl tracking-[0.4em] text-ink outline-none focus:border-focus"
       />
       {state.error && (
-        <p id="code-error" role="alert" className="text-sm text-red-300">
+        <p id="code-error" role="alert" className="text-sm text-danger">
           {state.error}
         </p>
       )}
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-accent px-4 py-2 font-semibold text-navy-950 disabled:opacity-60"
+        className="rounded-lg bg-accent px-4 py-2 font-semibold text-on-accent disabled:opacity-60"
       >
         {pending ? "যাচাই হচ্ছে…" : "লগইন করুন"}
       </button>

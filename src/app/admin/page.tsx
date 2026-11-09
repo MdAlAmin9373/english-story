@@ -40,7 +40,7 @@ async function AdminStoryList() {
         return (
           <li
             key={story.id}
-            className="flex flex-col gap-3 rounded-xl border border-navy-800 bg-navy-900 p-4 sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4 sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="flex min-w-0 flex-col gap-1">
               <div className="flex flex-wrap items-center gap-2">

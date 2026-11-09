@@ -80,7 +80,7 @@ async function ChapterReader({
     return (
       <>
         {header}
-        <section className="flex flex-col items-start gap-3 rounded-xl border border-navy-800 bg-navy-900 p-5">
+        <section className="flex flex-col items-start gap-3 rounded-xl border border-line bg-surface p-5">
           <p className="text-lg font-semibold text-ink">
             <span aria-hidden="true">🔒 </span>
             আগে অধ্যায় {toBnDigits(lock.requiredOrder)} শেষ করুন
@@ -91,13 +91,13 @@ async function ChapterReader({
           <div className="flex flex-wrap gap-2">
             <Link
               href={`${base}/${lock.requiredOrder}`}
-              className="rounded-lg bg-accent px-4 py-2 font-semibold text-navy-950 hover:opacity-90"
+              className="rounded-lg bg-accent px-4 py-2 font-semibold text-on-accent hover:opacity-90"
             >
               অধ্যায় {toBnDigits(lock.requiredOrder)}-এ যান →
             </Link>
             <Link
               href={base}
-              className="rounded-lg border border-navy-700 px-4 py-2 text-ink hover:border-accent"
+              className="rounded-lg border border-line-strong px-4 py-2 text-ink hover:border-accent"
             >
               সব অধ্যায়
             </Link>
@@ -124,7 +124,7 @@ async function ChapterReader({
           <ChapterQuiz chapterId={chapter.id} userId={user.id} status={status} />
         </Suspense>
       ) : (
-        <p className="rounded-xl border border-navy-800 bg-navy-900 p-4 text-ink-muted">
+        <p className="rounded-xl border border-line bg-surface p-4 text-ink-muted">
           অনুশীলন করতে ও অগ্রগতি সংরক্ষণ করতে{" "}
           <Link
             href={loginPathWithNext(`${base}/${chapter.order}`)}
@@ -161,7 +161,7 @@ async function ChapterReader({
         {chapter.prevOrder !== null ? (
           <Link
             href={`${base}/${chapter.prevOrder}`}
-            className="rounded-lg border border-navy-700 px-4 py-2 text-ink hover:border-accent"
+            className="rounded-lg border border-line-strong px-4 py-2 text-ink hover:border-accent"
           >
             ← আগের অধ্যায়
           </Link>
@@ -171,14 +171,14 @@ async function ChapterReader({
         {chapter.nextOrder !== null ? (
           <Link
             href={`${base}/${chapter.nextOrder}`}
-            className="rounded-lg bg-accent px-4 py-2 font-semibold text-navy-950 hover:opacity-90"
+            className="rounded-lg bg-accent px-4 py-2 font-semibold text-on-accent hover:opacity-90"
           >
             পরের অধ্যায় →
           </Link>
         ) : (
           <Link
             href={base}
-            className="rounded-lg border border-navy-700 px-4 py-2 text-ink hover:border-accent"
+            className="rounded-lg border border-line-strong px-4 py-2 text-ink hover:border-accent"
           >
             গল্প শেষ ✓
           </Link>

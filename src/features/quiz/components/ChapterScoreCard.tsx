@@ -14,7 +14,7 @@ export function ChapterScoreCard({ position, total }: { position: number; total:
   return (
     <section
       aria-label="অধ্যায়ের স্কোর"
-      className="flex flex-col gap-3 rounded-xl border border-navy-800 bg-navy-900 p-4"
+      className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <p className="text-sm text-accent">

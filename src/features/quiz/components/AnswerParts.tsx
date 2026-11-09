@@ -20,10 +20,16 @@ export function OptionList({
   return (
     <ul className="grid gap-2 sm:grid-cols-2">
       {options.map((option, i) => {
-        let tone = "border-navy-700 hover:border-accent";
-        if (result?.correct && i === result.correctIndex) tone = "border-emerald-400 bg-emerald-400/10";
-        else if (result && !result.correct && i === chosen) tone = "border-red-400 bg-red-400/10";
-        else if (i === chosen) tone = "border-accent";
+        // The mark repeats the color cue as a symbol; AnswerFeedback announces the result.
+        let tone = "border-line-strong hover:border-accent";
+        let mark: string | null = null;
+        if (result?.correct && i === result.correctIndex) {
+          tone = "border-success-strong bg-success-strong/10";
+          mark = "✓";
+        } else if (result && !result.correct && i === chosen) {
+          tone = "border-danger-strong bg-danger-strong/10";
+          mark = "✗";
+        } else if (i === chosen) tone = "border-accent";
 
         return (
           <li key={i}>
@@ -35,6 +41,11 @@ export function OptionList({
               aria-pressed={i === chosen}
               className={`min-h-11 w-full rounded-lg border px-4 py-2 text-left text-ink transition-colors disabled:cursor-default ${tone}`}
             >
+              {mark && (
+                <span aria-hidden className={`mr-2 font-semibold ${mark === "✓" ? "text-success" : "text-danger"}`}>
+                  {mark}
+                </span>
+              )}
               {option}
             </button>
           </li>
@@ -63,9 +74,9 @@ export function AnswerFeedback({
   return (
     <div role="status" aria-live="polite" className="min-h-6 text-sm">
       {pending && <p className="text-ink-muted">যাচাই হচ্ছে…</p>}
-      {error && <p className="text-red-300">{error}</p>}
+      {error && <p className="text-danger">{error}</p>}
       {!pending && result?.correct && (
-        <p className="font-semibold text-emerald-300">
+        <p className="font-semibold text-success">
           {result.restored
             ? `✓ সমাধান হয়েছে · ${scoreLabel(result.points, MAX_POINTS)}`
             : `✓ সঠিক · ${pointsGainedLabel(result.points)}`}
@@ -73,7 +84,7 @@ export function AnswerFeedback({
       )}
       {!pending && result && !result.correct && (
         <p>
-          <span className="font-semibold text-red-300">✗ ভুল · {attemptLabel(result.attempt)}</span>
+          <span className="font-semibold text-danger">✗ ভুল · {attemptLabel(result.attempt)}</span>
           <span className="text-ink-muted"> — {retryHint}</span>
         </p>
       )}

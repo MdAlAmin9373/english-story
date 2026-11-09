@@ -22,7 +22,7 @@ export default function NewStoryPage() {
 async function NewStory() {
   await requireAdmin("/admin/stories/new");
   return (
-    <div className="rounded-xl border border-navy-800 bg-navy-900 p-4 sm:p-6">
+    <div className="rounded-xl border border-line bg-surface p-4 sm:p-6">
       <StoryForm action={createStory} submitLabel="গল্প তৈরি করুন" />
     </div>
   );

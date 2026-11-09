@@ -22,7 +22,7 @@ export function ChoiceCard({
   const { chosen, result, error, pending, choose } = useAnswer(questionId, solved);
 
   return (
-    <article className="flex flex-col gap-3 rounded-xl border border-navy-800 bg-navy-900 p-4">
+    <article className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4">
       <header className="flex flex-col gap-1">
         <p className="text-xs text-accent">প্রশ্ন {toBnDigits(number)} · সঠিক উত্তর বাছুন</p>
         <p className="text-ink">{promptBn}</p>

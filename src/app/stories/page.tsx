@@ -38,7 +38,7 @@ async function StoryList() {
         <li key={story.slug}>
           <Link
             href={`/stories/${story.slug}`}
-            className="flex h-full flex-col gap-2 rounded-xl border border-navy-800 bg-navy-900 p-5 hover:border-accent"
+            className="flex h-full flex-col gap-2 rounded-xl border border-line bg-surface p-5 hover:border-accent"
           >
             <div className="flex items-start justify-between gap-3">
               <h2 className="text-lg font-semibold text-ink">{story.titleBn}</h2>
@@ -47,7 +47,7 @@ async function StoryList() {
                   aria-label={`অগ্রগতি ${toBnDigits(percent.get(story.slug) ?? 0)}%`}
                   className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${
                     percent.get(story.slug) === 100
-                      ? "bg-emerald-400/15 text-emerald-300"
+                      ? "bg-success-strong/15 text-success"
                       : "bg-accent/15 text-accent"
                   }`}
                 >

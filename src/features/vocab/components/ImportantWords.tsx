@@ -26,7 +26,7 @@ export async function ImportantWords({ chapterId }: { chapterId: string }) {
           return (
             <li
               key={w.order}
-              className={`flex flex-col gap-2 rounded-xl border border-navy-800 bg-navy-900 p-4 ${
+              className={`flex flex-col gap-2 rounded-xl border border-line bg-surface p-4 ${
                 wordForms ? "sm:col-span-2" : ""
               }`}
             >
@@ -42,7 +42,7 @@ export async function ImportantWords({ chapterId }: { chapterId: string }) {
               <p className="text-ink">
                 অর্থ · <span lang="en">Meaning</span>: {w.meaningBn}
               </p>
-              <div className="border-l-2 border-navy-700 pl-3 text-sm">
+              <div className="border-l-2 border-line-strong pl-3 text-sm">
                 <p lang="en" className="text-ink">
                   {w.exampleEn}
                 </p>

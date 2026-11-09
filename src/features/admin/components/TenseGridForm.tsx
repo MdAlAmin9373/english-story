@@ -36,13 +36,13 @@ export function TenseGridForm({
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
-      <p className="rounded-lg border border-navy-700 bg-navy-950 p-3 text-sm text-ink-muted">
+      <p className="rounded-lg border border-line-strong bg-page p-3 text-sm text-ink-muted">
         এই রূপগুলো <span lang="en">“{word}”</span> শব্দটি ব্যবহার করা সব অধ্যায়ে একই থাকবে।
         কোনো ঘর খালি রাখলে সেটি বাদ যাবে; আগে থেকে থাকা রূপ মুছে যাবে না।
       </p>
 
       {/* Wide table: scrolls sideways on small phones instead of squeezing the inputs. */}
-      <div className="overflow-x-auto rounded-lg border border-navy-800">
+      <div className="overflow-x-auto rounded-lg border border-line">
         <table className="w-full min-w-[640px] border-collapse text-left">
           <thead>
             <tr>
@@ -58,7 +58,7 @@ export function TenseGridForm({
           </thead>
           <tbody>
             {rows.map(({ time, cells }) => (
-              <tr key={time} className="border-t border-navy-800 align-top">
+              <tr key={time} className="border-t border-line align-top">
                 <th scope="row" className="p-2 text-sm font-semibold text-ink">
                   {bilingualLabel(tenseTimeLabel[time])}
                 </th>
@@ -83,7 +83,7 @@ export function TenseGridForm({
                           className={`${inputClass} text-sm`}
                         />
                         {error && (
-                          <p id={`${uid}-${name}-error`} className="text-xs text-red-300">
+                          <p id={`${uid}-${name}-error`} className="text-xs text-danger">
                             {error}
                           </p>
                         )}

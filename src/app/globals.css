@@ -9,7 +9,7 @@
   --surface: #111d3f;
   --surface-raised: #1a2a55;
   --border: #1a2a55;
-  --border-strong: #263a6e;
+  --border-strong: #5a6ea3; /* was #263a6e; raised to meet 3:1 for control borders */
   --text: #e6ebf5;
   --text-muted: #a9b4cc;
   --accent: #f5b942;
@@ -76,11 +76,6 @@
 }
 
 @theme {
-  /* Legacy navy palette: replaced by the tokens above in step 2, then removed. */
-  --color-navy-950: #0b1530;
-  --color-navy-900: #111d3f;
-  --color-navy-800: #1a2a55;
-  --color-navy-700: #263a6e;
   --font-sans: "Hind Siliguri", system-ui, sans-serif;
 }
 

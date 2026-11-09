@@ -7,7 +7,7 @@ export default function Home() {
       <p className="max-w-md text-lg text-ink-muted">
         গল্প পড়ে সহজে ইংরেজি শিখুন
       </p>
-      <span className="rounded-full border border-navy-700 bg-navy-800 px-4 py-1 text-sm text-accent">
+      <span className="rounded-full border border-line-strong bg-raised px-4 py-1 text-sm text-accent">
         শীঘ্রই আসছে
       </span>
     </main>

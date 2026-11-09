@@ -22,10 +22,10 @@ export async function ChapterNotes({ chapterId }: { chapterId: string }) {
         {notes.map((note) => (
           <li
             key={note.order}
-            className="flex flex-col gap-2 rounded-xl border border-navy-800 bg-navy-900 p-4"
+            className="flex flex-col gap-2 rounded-xl border border-line bg-surface p-4"
           >
             <div className="flex flex-col gap-0.5">
-              <span className="self-start rounded-full border border-navy-700 px-2 py-0.5 text-xs text-accent">
+              <span className="self-start rounded-full border border-line-strong px-2 py-0.5 text-xs text-accent">
                 {noteKindLabel[note.kind]}
               </span>
               <h3 className="text-lg font-semibold text-ink">{note.titleBn}</h3>
@@ -42,7 +42,7 @@ export async function ChapterNotes({ chapterId }: { chapterId: string }) {
                 <NoteTable key={i} header={block.header} rows={block.rows} />
               ),
             )}
-            <p lang="en" className="border-l-2 border-navy-700 pl-3 text-sm text-ink">
+            <p lang="en" className="border-l-2 border-line-strong pl-3 text-sm text-ink">
               {note.exampleEn}
             </p>
           </li>
@@ -56,19 +56,19 @@ function NoteTable({ header, rows }: { header: string[] | null; rows: string[][]
   const columns = header?.length ?? rows[0]?.length ?? 0;
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-navy-700">
+    <div className="overflow-x-auto rounded-lg border border-line-strong">
       <table
         className="w-full border-collapse text-left text-sm"
         style={{ minWidth: `${columns * TABLE_COLUMN_REM}rem` }}
       >
         {header && (
-          <thead className="bg-navy-950">
+          <thead className="bg-page">
             <tr>
               {header.map((cell, c) => (
                 <th
                   key={c}
                   scope="col"
-                  className="border-b border-navy-700 px-3 py-2 font-semibold text-accent"
+                  className="border-b border-line-strong px-3 py-2 font-semibold text-accent"
                 >
                   {cell}
                 </th>
@@ -78,7 +78,7 @@ function NoteTable({ header, rows }: { header: string[] | null; rows: string[][]
         )}
         <tbody>
           {rows.map((row, r) => (
-            <tr key={r} className="border-t border-navy-800 first:border-t-0">
+            <tr key={r} className="border-t border-line first:border-t-0">
               {row.map((cell, c) => (
                 <td
                   key={c}

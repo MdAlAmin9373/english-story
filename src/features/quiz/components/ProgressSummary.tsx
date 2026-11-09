@@ -33,29 +33,29 @@ export async function ProgressSummary({ userId }: { userId: string }) {
       {resume && resumeChapter && (
         <Link
           href={`/stories/${resume.slug}/${resumeChapter.order}`}
-          className="flex flex-col gap-2 rounded-xl border-2 border-accent bg-navy-900 p-4 hover:opacity-90"
+          className="flex flex-col gap-2 rounded-xl border-2 border-accent bg-surface p-4 hover:opacity-90"
         >
           <span className="text-sm text-accent">যেখান থেকে ছেড়েছিলেন</span>
           <span className="text-lg font-semibold text-ink">{resume.titleBn}</span>
           <span className="text-ink-muted">
             অধ্যায় {toBnDigits(resumeChapter.order)}: {resumeChapter.titleBn}
           </span>
-          <span className="self-start rounded-lg bg-accent px-4 py-2 font-semibold text-navy-950">
+          <span className="self-start rounded-lg bg-accent px-4 py-2 font-semibold text-on-accent">
             চালিয়ে যান →
           </span>
         </Link>
       )}
 
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <div className="rounded-xl border border-navy-800 bg-navy-900 p-4">
+        <div className="rounded-xl border border-line bg-surface p-4">
           <dt className="text-sm text-ink-muted">সম্পন্ন অধ্যায়</dt>
           <dd className="text-2xl font-bold text-accent">{toBnDigits(completed.length)}</dd>
         </div>
-        <div className="rounded-xl border border-navy-800 bg-navy-900 p-4">
+        <div className="rounded-xl border border-line bg-surface p-4">
           <dt className="text-sm text-ink-muted">সঠিক উত্তর</dt>
           <dd className="text-2xl font-bold text-accent">{toBnDigits(correctCount)}</dd>
         </div>
-        <div className="col-span-2 rounded-xl border border-navy-800 bg-navy-900 p-4 sm:col-span-1">
+        <div className="col-span-2 rounded-xl border border-line bg-surface p-4 sm:col-span-1">
           <dt className="text-sm text-ink-muted">মোট পয়েন্ট</dt>
           <dd className="text-2xl font-bold text-accent">{toBnDigits(totalPoints)}</dd>
         </div>
@@ -71,7 +71,7 @@ export async function ProgressSummary({ userId }: { userId: string }) {
               <li key={s.slug}>
                 <Link
                   href={`/stories/${s.slug}`}
-                  className="flex flex-col gap-2 rounded-xl border border-navy-800 bg-navy-900 p-4 hover:border-accent"
+                  className="flex flex-col gap-2 rounded-xl border border-line bg-surface p-4 hover:border-accent"
                 >
                   <span className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                     <span className="text-ink">{s.titleBn}</span>
@@ -109,7 +109,7 @@ export async function ProgressSummary({ userId }: { userId: string }) {
             <li key={`${chapter.story.slug}/${chapter.order}`}>
               <Link
                 href={`/stories/${chapter.story.slug}/${chapter.order}`}
-                className="flex flex-col gap-0.5 rounded-xl border border-navy-800 bg-navy-900 p-4 hover:border-accent sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-0.5 rounded-xl border border-line bg-surface p-4 hover:border-accent sm:flex-row sm:items-center sm:justify-between"
               >
                 <span className="text-ink">
                   {chapter.story.titleBn} · অধ্যায় {toBnDigits(chapter.order)}: {chapter.titleBn}

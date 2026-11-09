@@ -10,8 +10,8 @@ export function StatusBadge({ status }: { status: PublishStatus }) {
     <span
       className={
         status === "PUBLISHED"
-          ? "rounded-full bg-emerald-400/15 px-2 py-0.5 text-xs text-emerald-300"
-          : "rounded-full bg-navy-700 px-2 py-0.5 text-xs text-ink-muted"
+          ? "rounded-full bg-success-strong/15 px-2 py-0.5 text-xs text-success"
+          : "rounded-full bg-raised px-2 py-0.5 text-xs text-ink-muted"
       }
     >
       {statusLabel[status]}

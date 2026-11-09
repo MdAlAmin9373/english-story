@@ -35,7 +35,7 @@ async function DashboardPanel() {
       <form action={logout}>
         <button
           type="submit"
-          className="rounded-lg border border-navy-700 px-4 py-2 text-ink hover:border-accent"
+          className="rounded-lg border border-line-strong px-4 py-2 text-ink hover:border-accent"
         >
           লগআউট
         </button>

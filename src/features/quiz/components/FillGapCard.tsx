@@ -31,7 +31,7 @@ export function FillGapCard({
       : null;
 
   return (
-    <article className="flex flex-col gap-3 rounded-xl border border-navy-800 bg-navy-900 p-4">
+    <article className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4">
       <header className="flex flex-col gap-1">
         <p className="text-xs text-accent">প্রশ্ন {toBnDigits(number)} · শূন্যস্থান পূরণ করুন</p>
         <p className="text-ink-muted">{promptBn}</p>
@@ -39,7 +39,7 @@ export function FillGapCard({
           {before}
           <span
             className={`mx-1 inline-block min-w-16 border-b-2 px-1 text-center ${
-              result ? (result.correct ? "border-emerald-400" : "border-red-400") : "border-accent"
+              result ? (result.correct ? "border-success-strong" : "border-danger-strong") : "border-accent"
             }`}
           >
             {filled ?? <span className="sr-only">শূন্যস্থান</span>}

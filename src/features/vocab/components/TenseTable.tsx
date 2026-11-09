@@ -11,14 +11,14 @@ export function TenseTable({ word, forms }: { word: string; forms: TenseFormInpu
   const rows = buildTenseTable(forms);
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-navy-800">
+    <div className="overflow-x-auto rounded-lg border border-line">
       <table className="w-full min-w-[36rem] border-collapse text-left text-sm">
         <caption className="sr-only">
           <span lang="en">{word}</span> — কালের রূপ{labelSeparator}
           <span lang="en">Tense forms</span>
         </caption>
         <thead>
-          <tr className="bg-navy-950 text-ink-muted">
+          <tr className="bg-page text-ink-muted">
             <th scope="col" className="p-2 font-medium">
               কাল
             </th>
@@ -33,7 +33,7 @@ export function TenseTable({ word, forms }: { word: string; forms: TenseFormInpu
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={row.time} className="border-t border-navy-800 align-top">
+            <tr key={row.time} className="border-t border-line align-top">
               <th scope="row" className="whitespace-nowrap p-2 font-medium text-accent">
                 {tenseTimeLabel[row.time].bn}
                 {labelSeparator}

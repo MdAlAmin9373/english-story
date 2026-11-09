@@ -38,7 +38,7 @@ async function EditStory({ params }: { params: Promise<{ storyId: string }> }) {
         <StatusBadge status={story.status} />
       </div>
 
-      <section className="rounded-xl border border-navy-800 bg-navy-900 p-4 sm:p-6">
+      <section className="rounded-xl border border-line bg-surface p-4 sm:p-6">
         <StoryForm
           action={updateStory.bind(null, story.id)}
           story={story}
@@ -62,7 +62,7 @@ async function EditStory({ params }: { params: Promise<{ storyId: string }> }) {
               return (
                 <li
                   key={chapter.id}
-                  className="flex flex-col gap-3 rounded-xl border border-navy-800 bg-navy-900 p-3 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-3 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <Link
                     href={`/admin/stories/${story.id}/chapters/${chapter.id}`}

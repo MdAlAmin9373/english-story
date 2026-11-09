@@ -148,11 +148,11 @@ export function SentenceOrderGame({
     const tone =
       zone === "answer" && result
         ? result.correct
-          ? "border-emerald-400 bg-emerald-400/10"
-          : "border-red-400 bg-red-400/10"
+          ? "border-success-strong bg-success-strong/10"
+          : "border-danger-strong bg-danger-strong/10"
         : zone === "answer"
-          ? "border-accent bg-navy-800"
-          : "border-navy-700 bg-navy-900 hover:border-accent";
+          ? "border-accent bg-raised"
+          : "border-line-strong bg-surface hover:border-accent";
 
     return (
       <button
@@ -182,7 +182,7 @@ export function SentenceOrderGame({
   }
 
   return (
-    <article className="flex flex-col gap-3 rounded-xl border border-navy-800 bg-navy-900 p-4">
+    <article className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4">
       <header className="flex flex-col gap-1">
         <p className="text-xs text-accent">শব্দ সাজিয়ে বাক্য বানান</p>
         <p className="text-ink">{promptBn}</p>
@@ -191,7 +191,7 @@ export function SentenceOrderGame({
       <div
         ref={answerRef}
         aria-label="আপনার বাক্য"
-        className="flex min-h-16 flex-wrap items-center gap-2 rounded-lg border-2 border-dashed border-navy-700 bg-navy-950 p-2"
+        className="flex min-h-16 flex-wrap items-center gap-2 rounded-lg border-2 border-dashed border-line-strong bg-page p-2"
       >
         {placed.length === 0 && (
           <span className="px-1 text-sm text-ink-muted">শব্দগুলো এখানে টেনে আনুন বা ট্যাপ করুন</span>
@@ -209,7 +209,7 @@ export function SentenceOrderGame({
             type="button"
             onClick={check}
             disabled={pending || bank.length > 0 || result !== null}
-            className="min-h-11 rounded-lg bg-accent px-4 py-2 font-semibold text-navy-950 disabled:opacity-50"
+            className="min-h-11 rounded-lg bg-accent px-4 py-2 font-semibold text-on-accent disabled:opacity-50"
           >
             যাচাই করুন
           </button>
@@ -217,7 +217,7 @@ export function SentenceOrderGame({
             type="button"
             onClick={() => edit(() => [])}
             disabled={pending || placed.length === 0}
-            className="min-h-11 rounded-lg border border-navy-700 px-4 py-2 text-ink hover:border-accent disabled:opacity-50"
+            className="min-h-11 rounded-lg border border-line-strong px-4 py-2 text-ink hover:border-accent disabled:opacity-50"
           >
             সব সরান
           </button>
