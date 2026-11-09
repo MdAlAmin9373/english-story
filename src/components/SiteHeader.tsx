@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { HeaderAuth } from "@/features/auth/components/HeaderAuth";
+import { ThemeSwitcher } from "@/features/theme/components/ThemeSwitcher";
 
 // Items without href are placeholders until those routes exist;
 // they are hidden on phones to leave room for the login button.
@@ -36,6 +37,7 @@ export function SiteHeader() {
               )}
             </ul>
           </nav>
+          <ThemeSwitcher />
           {/* Fallback keeps the button's footprint so the header doesn't shift. */}
           <Suspense fallback={<span aria-hidden className="block h-8 w-16" />}>
             <HeaderAuth />
