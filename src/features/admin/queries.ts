@@ -95,11 +95,12 @@ export async function getAdminChapter(storyId: string, chapterId: string) {
           promptEn: true,
           options: true,
           correctIndex: true,
+          hint: true,
         },
       },
       orderTasks: {
         orderBy: { order: "asc" },
-        select: { id: true, order: true, promptBn: true, en: true },
+        select: { id: true, order: true, promptBn: true, en: true, hint: true },
       },
       notes: {
         orderBy: { order: "asc" },

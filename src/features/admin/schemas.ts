@@ -2,6 +2,7 @@ import { z } from "zod";
 import { toBnDigits } from "@/features/stories/labels";
 import { GENRES, NOTE_KINDS, QUESTION_TYPES, STATUSES } from "./constants";
 import {
+  MAX_HINT_LENGTH,
   MAX_NOTE_BODY_LENGTH,
   MAX_NOTE_EXAMPLE_LENGTH,
   MAX_NOTE_TITLE_LENGTH,
@@ -10,6 +11,7 @@ import {
   checkOrderSentence,
   checkQuestion,
   checkTenseGrid,
+  normalizeHint,
   normalizeNoteBody,
   normalizeSlug,
   normalizeWord,
@@ -24,6 +26,20 @@ const text = (max: number) =>
     .max(max, `সর্বোচ্চ ${toBnDigits(max)} অক্ষর লেখা যাবে।`);
 
 export const idSchema = z.string().min(1).max(64);
+
+// Optional hint: normalized first (see normalizeHint), then length-checked; null = no hint.
+// The raw cap only bounds the request size.
+const hint = z
+  .string()
+  .max(4000)
+  .optional()
+  .transform(normalizeHint)
+  .pipe(
+    z
+      .string()
+      .max(MAX_HINT_LENGTH, `ইঙ্গিত সর্বোচ্চ ${toBnDigits(MAX_HINT_LENGTH)} অক্ষরের হতে পারে।`)
+      .nullable(),
+  );
 
 // An unchecked checkbox is absent from FormData.
 const checkbox = z
@@ -82,6 +98,7 @@ export const questionSchema = z
     promptEn: text(300),
     options: z.string("অপশন লিখুন।").max(1000).transform(parseOptionLines),
     correctIndex: z.coerce.number("সঠিক উত্তর বেছে নিন।").int(),
+    hint,
   })
   .superRefine((q, ctx) => {
     const error = checkQuestion(q);
@@ -105,6 +122,7 @@ export const orderTaskSchema = z
   .object({
     promptBn: text(200),
     en: text(300),
+    hint,
   })
   .superRefine((task, ctx) => {
     const error = checkOrderSentence(task.en);

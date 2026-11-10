@@ -3,14 +3,15 @@
 import { useActionState, useId } from "react";
 import type { AdminFormState } from "../actions";
 import { Field, SubmitRow, inputClass } from "./fields";
+import { HintField } from "./HintField";
 
-export type OrderTaskDefaults = { promptBn: string; en: string };
+export type OrderTaskDefaults = { promptBn: string; en: string; hint: string | null };
 
 // A sentence-order task: a short Bengali hint and the English sentence the
 // reader rebuilds from shuffled words.
 export function OrderTaskForm({
   action,
-  task = { promptBn: "", en: "" },
+  task = { promptBn: "", en: "", hint: null },
   submitLabel,
 }: {
   action: (state: AdminFormState, formData: FormData) => Promise<AdminFormState>;
@@ -59,6 +60,11 @@ export function OrderTaskForm({
           />
         </Field>
       </div>
+      <HintField
+        id={`${uid}-hint`}
+        defaultValue={state.values?.hint ?? task.hint ?? ""}
+        errors={errors.hint}
+      />
       <SubmitRow pending={pending} label={submitLabel} error={state.error} saved={state.saved} />
     </form>
   );

@@ -1,5 +1,6 @@
 import type { QuestionType } from "@prisma/client";
 import { seededShuffle, tokenize } from "@/features/quiz/check";
+import { HintBox } from "@/features/quiz/components/HintBox";
 import { toBnDigits } from "@/features/stories/labels";
 
 // Read-only look at a chapter's practice, for the admin preview. It has no
@@ -20,8 +21,9 @@ export function QuizPreview({
     promptEn: string;
     options: string[];
     correctIndex: number;
+    hint: string | null;
   }[];
-  orderTasks: { id: string; promptBn: string; en: string }[];
+  orderTasks: { id: string; promptBn: string; en: string; hint: string | null }[];
 }) {
   if (questions.length === 0 && orderTasks.length === 0) return null;
 
@@ -65,6 +67,8 @@ export function QuizPreview({
                     </li>
                   ))}
                 </ul>
+                {/* Readers see this only after pressing "ইঙ্গিত দেখুন". */}
+                {q.hint && <HintBox hint={q.hint} />}
               </article>
             </li>
           ))}
@@ -91,6 +95,7 @@ export function QuizPreview({
                 <p className="text-sm text-success">
                   ✓ সঠিক বাক্য: <span lang="en">{t.en}</span>
                 </p>
+                {t.hint && <HintBox hint={t.hint} />}
               </article>
             </li>
           ))}

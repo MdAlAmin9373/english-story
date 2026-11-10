@@ -17,15 +17,17 @@ enum Role {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  role      Role      @default(USER)
-  createdAt DateTime  @default(now())
-  updatedAt    DateTime       @updatedAt
-  sessions     Session[]
-  quizAttempts QuizAttempt[]
+  id                String             @id @default(cuid())
+  email             String             @unique
+  role              Role               @default(USER)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  sessions          Session[]
+  quizAttempts      QuizAttempt[]
   orderTaskAttempts OrderTaskAttempt[]
-  progress     UserProgress[]
+  quizHintUses      QuizHintUse[]
+  orderTaskHintUses OrderTaskHintUse[]
+  progress          UserProgress[]
 }
 
 // Keyed by email so a User row is only created after a successful verify.
@@ -91,16 +93,16 @@ model Story {
 
 // Guests may read chapters with requiresLogin = false; see features/stories/access.ts.
 model Chapter {
-  id            String            @id @default(cuid())
+  id            String              @id @default(cuid())
   storyId       String
-  story         Story             @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  story         Story               @relation(fields: [storyId], references: [id], onDelete: Cascade)
   order         Int
   titleBn       String
   titleEn       String
-  requiresLogin Boolean           @default(true)
-  status        PublishStatus     @default(DRAFT)
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  requiresLogin Boolean             @default(true)
+  status        PublishStatus       @default(DRAFT)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
   sentences     ChapterSentence[]
   words         VocabularyWord[]
   quizQuestions QuizQuestion[]
@@ -182,7 +184,9 @@ model QuizQuestion {
   promptEn     String // FILL_GAP marks the blank with "___"
   options      Json // string[]
   correctIndex Int
+  hint         String? // optional, max 400 chars (Zod); null = no hint. Never sent before it is asked for.
   attempts     QuizAttempt[]
+  hintUses     QuizHintUse[]
 
   // Also serves lookups by chapterId (leading column).
   @@unique([chapterId, order])
@@ -205,13 +209,15 @@ model QuizAttempt {
 
 // Sentence-ordering game: the English sentence is split into shuffled words on the server.
 model SentenceOrderTask {
-  id        String  @id @default(cuid())
+  id        String             @id @default(cuid())
   chapterId String
-  chapter   Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  chapter   Chapter            @relation(fields: [chapterId], references: [id], onDelete: Cascade)
   order     Int
   promptBn  String
   en        String
+  hint      String? // optional, max 400 chars (Zod); null = no hint
   attempts  OrderTaskAttempt[]
+  hintUses  OrderTaskHintUse[]
 
   @@unique([chapterId, order])
 }
@@ -228,6 +234,33 @@ model OrderTaskAttempt {
 
   // Per-user scoring reads (attempt order matters).
   @@index([userId, taskId, createdAt])
+  @@index([taskId])
+}
+
+// Recorded only while the question is unsolved, so any row means "hint seen before the first
+// correct answer". The unique key makes recording idempotent; it also serves per-user reads.
+model QuizHintUse {
+  id         String       @id @default(cuid())
+  userId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId String
+  question   QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  createdAt  DateTime     @default(now())
+
+  @@unique([userId, questionId])
+  @@index([questionId])
+}
+
+// Same as QuizHintUse, for sentence-ordering tasks.
+model OrderTaskHintUse {
+  id        String            @id @default(cuid())
+  userId    String
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskId    String
+  task      SentenceOrderTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  createdAt DateTime          @default(now())
+
+  @@unique([userId, taskId])
   @@index([taskId])
 }
 

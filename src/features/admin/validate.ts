@@ -186,6 +186,16 @@ export function checkOrderSentence(en: string): string | null {
 
 // ---- Pronunciation & grammar notes ----
 
+export const MAX_HINT_LENGTH = 400;
+
+// Optional hint on a question or ordering task: line endings become "\n" (so a line break
+// counts as one character, as in the browser's textarea), then the text is trimmed.
+// Empty or whitespace-only means "no hint" (null); clearing the field removes the hint.
+export function normalizeHint(text: string | undefined): string | null {
+  const value = (text ?? "").replace(/\r\n?/g, "\n").trim();
+  return value === "" ? null : value;
+}
+
 export const MAX_NOTE_TITLE_LENGTH = 120;
 export const MAX_NOTE_BODY_LENGTH = 1500;
 export const MAX_NOTE_EXAMPLE_LENGTH = 300;

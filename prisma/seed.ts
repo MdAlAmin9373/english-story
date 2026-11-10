@@ -440,6 +440,9 @@ async function seedVocabulary(storyId: string) {
   console.log(`Seeded ${wordCount} words and ${formCount} tense forms.`);
 }
 
+// Hints are written in the admin panel only. Never add `hint` to the seed data or to the
+// `update` objects below: Prisma leaves fields missing from `update` untouched, so a
+// re-seed keeps every hint.
 async function seedQuiz(storyId: string) {
   let questionCount = 0;
   let taskCount = 0;

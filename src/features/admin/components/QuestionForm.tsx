@@ -7,6 +7,7 @@ import type { AdminFormState } from "../actions";
 import { QUESTION_TYPES, questionTypeLabel } from "../constants";
 import { MAX_OPTIONS } from "../validate";
 import { Field, SubmitRow, inputClass } from "./fields";
+import { HintField } from "./HintField";
 
 export type QuestionDefaults = {
   type: QuestionType;
@@ -14,6 +15,7 @@ export type QuestionDefaults = {
   promptEn: string;
   options: string[];
   correctIndex: number;
+  hint: string | null;
 };
 
 const empty: QuestionDefaults = {
@@ -22,6 +24,7 @@ const empty: QuestionDefaults = {
   promptEn: "",
   options: [],
   correctIndex: 0,
+  hint: null,
 };
 
 export function QuestionForm({
@@ -130,6 +133,12 @@ export function QuestionForm({
           </select>
         </Field>
       </div>
+
+      <HintField
+        id={`${uid}-hint`}
+        defaultValue={values?.hint ?? question.hint ?? ""}
+        errors={errors.hint}
+      />
 
       <SubmitRow pending={pending} label={submitLabel} error={state.error} saved={state.saved} />
     </form>

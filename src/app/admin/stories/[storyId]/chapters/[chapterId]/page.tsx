@@ -250,6 +250,7 @@ async function EditChapter({
                 <span className="text-sm text-success">
                   ✓ {question.options[question.correctIndex] ?? "—"}
                 </span>
+                {question.hint && <HintTag />}
               </>
             }
           >
@@ -307,6 +308,7 @@ async function EditChapter({
                 <span className="text-xs text-ink-muted">
                   {toBnDigits(countWords(task.en))}টি শব্দ
                 </span>
+                {task.hint && <HintTag />}
               </>
             }
           >
@@ -354,6 +356,15 @@ async function EditChapter({
         ))}
       </EditorSection>
     </>
+  );
+}
+
+// Marks a question or ordering task that has a hint (the text is in its edit form).
+function HintTag() {
+  return (
+    <span className="text-xs text-accent">
+      <span aria-hidden="true">💡 </span>ইঙ্গিত আছে
+    </span>
   );
 }
 
