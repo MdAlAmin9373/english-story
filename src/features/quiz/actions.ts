@@ -33,8 +33,11 @@ const MSG = {
 // Logged-in users may read every published chapter (see features/stories/access.ts).
 const published = { status: "PUBLISHED", story: { status: "PUBLISHED" } } as const;
 const oldestFirst = { createdAt: "asc" } as const;
+// Enough of the chapter to check the sequential lock.
+const lockFields = { chapter: { select: { storyId: true, order: true } } } as const;
 
 // Every attempt is recorded; unlimited retries are allowed.
+// A locked chapter records nothing, same as completeChapter.
 export async function submitAnswer(input: unknown): Promise<AnswerResult> {
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: MSG.loginRequired };
@@ -45,11 +48,14 @@ export async function submitAnswer(input: unknown): Promise<AnswerResult> {
 
   const question = await db.quizQuestion.findFirst({
     where: { id: questionId, chapter: published },
-    select: { id: true, options: true, correctIndex: true },
+    select: { id: true, options: true, correctIndex: true, ...lockFields },
   });
   const options = question && parseOptions(question.options);
   if (!question || !options) return { ok: false, error: MSG.notFound };
   if (chosenIndex >= options.length) return { ok: false, error: MSG.invalid };
+  if ((await getChapterLock(question.chapter, user.id)).locked) {
+    return { ok: false, error: MSG.locked };
+  }
 
   const correct = isCorrectChoice(question.correctIndex, chosenIndex, options.length);
   await db.quizAttempt.create({
@@ -77,9 +83,12 @@ export async function checkOrder(input: unknown): Promise<OrderResult> {
 
   const task = await db.sentenceOrderTask.findFirst({
     where: { id: taskId, chapter: published },
-    select: { id: true, en: true },
+    select: { id: true, en: true, ...lockFields },
   });
   if (!task) return { ok: false, error: MSG.notFound };
+  if ((await getChapterLock(task.chapter, user.id)).locked) {
+    return { ok: false, error: MSG.locked };
+  }
 
   const correct = isCorrectOrder(task.en, tokens);
   await db.orderTaskAttempt.create({ data: { userId: user.id, taskId: task.id, correct } });
