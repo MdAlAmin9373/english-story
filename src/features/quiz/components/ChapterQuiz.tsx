@@ -64,6 +64,8 @@ export async function ChapterQuiz({
                   promptBn={q.promptBn}
                   promptEn={q.promptEn}
                   options={q.options}
+                  hasHint={q.hasHint}
+                  hint={q.hint}
                   solved={solvedQuestion(q.id)}
                 />
               </li>
@@ -80,6 +82,8 @@ export async function ChapterQuiz({
                 taskId={t.id}
                 promptBn={t.promptBn}
                 tokens={t.tokens}
+                hasHint={t.hasHint}
+                hint={t.hint}
                 solved={solvedTask(t.id)}
               />
             </li>

@@ -2,6 +2,7 @@
 
 import { toBnDigits } from "@/features/stories/labels";
 import { AnswerFeedback, OptionList } from "./AnswerParts";
+import { HintPanel } from "./HintPanel";
 import { useAnswer, type SolvedQuestion } from "./use-answer";
 
 const BLANK = "___";
@@ -12,6 +13,8 @@ export function FillGapCard({
   promptBn,
   promptEn,
   options,
+  hasHint,
+  hint,
   solved,
 }: {
   number: number;
@@ -19,6 +22,8 @@ export function FillGapCard({
   promptBn: string;
   promptEn: string; // contains "___" where the word goes
   options: string[];
+  hasHint: boolean;
+  hint: string | null; // only when this reader already revealed it
   solved: SolvedQuestion | null;
 }) {
   const { chosen, result, error, pending, choose } = useAnswer(questionId, solved);
@@ -47,6 +52,13 @@ export function FillGapCard({
           {after}
         </p>
       </header>
+      <HintPanel
+        kind="question"
+        id={questionId}
+        hasHint={hasHint}
+        initialHint={hint}
+        solved={result?.correct === true}
+      />
       <OptionList
         options={options}
         chosen={chosen}

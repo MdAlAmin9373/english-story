@@ -4,6 +4,7 @@ import { useRef, useState, useTransition, type PointerEvent } from "react";
 import { checkOrder } from "../actions";
 import { tokenize } from "../check";
 import { AnswerFeedback, type Feedback } from "./AnswerParts";
+import { HintPanel } from "./HintPanel";
 import { useQuizProgress } from "./QuizProgress";
 
 type Zone = "answer" | "bank";
@@ -32,11 +33,15 @@ export function SentenceOrderGame({
   taskId,
   promptBn,
   tokens,
+  hasHint,
+  hint,
   solved,
 }: {
   taskId: string;
   promptBn: string;
   tokens: string[];
+  hasHint: boolean;
+  hint: string | null; // only when this reader already revealed it
   solved: SolvedTask | null;
 }) {
   // token indexes in the answer row
@@ -187,6 +192,8 @@ export function SentenceOrderGame({
         <p className="text-xs text-accent">শব্দ সাজিয়ে বাক্য বানান</p>
         <p className="text-ink">{promptBn}</p>
       </header>
+
+      <HintPanel kind="task" id={taskId} hasHint={hasHint} initialHint={hint} solved={isSolved} />
 
       <div
         ref={answerRef}
