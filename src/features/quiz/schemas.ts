@@ -12,6 +12,11 @@ export const orderSchema = z.object({
   tokens: z.array(z.string().max(60)).min(1).max(40),
 });
 
+export const hintSchema = z.object({
+  kind: z.enum(["question", "task"]),
+  id: idSchema,
+});
+
 export const chapterSchema = z.object({
   chapterId: idSchema,
 });

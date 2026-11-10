@@ -1,22 +1,27 @@
 import "server-only";
 import { db } from "@/lib/db";
 import { parseOptions, seededShuffle, tokenize } from "./check";
+import { publicHint } from "./hint";
 
 // Database reads: call these inside a <Suspense> boundary.
 // Callers must check chapter access (features/stories/access.ts) first.
 
-// Never selects correctIndex or the ordered sentence: answers stay on the server.
-export async function getChapterQuiz(chapterId: string, userId: string) {
+// Ids of items whose hint this user has revealed (from getChapterStatus, per user).
+export type RevealedHints = { questions: ReadonlySet<string>; tasks: ReadonlySet<string> };
+
+// Never returns correctIndex or the ordered sentence: answers stay on the server.
+// Hint text is returned only for items in `revealed`; for the rest only hasHint.
+export async function getChapterQuiz(chapterId: string, userId: string, revealed: RevealedHints) {
   const [questions, tasks, progress] = await Promise.all([
     db.quizQuestion.findMany({
       where: { chapterId },
       orderBy: { order: "asc" },
-      select: { id: true, type: true, promptBn: true, promptEn: true, options: true },
+      select: { id: true, type: true, promptBn: true, promptEn: true, options: true, hint: true },
     }),
     db.sentenceOrderTask.findMany({
       where: { chapterId },
       orderBy: { order: "asc" },
-      select: { id: true, promptBn: true, en: true },
+      select: { id: true, promptBn: true, en: true, hint: true },
     }),
     db.userProgress.findUnique({
       where: { userId_chapterId: { userId, chapterId } },
@@ -25,14 +30,17 @@ export async function getChapterQuiz(chapterId: string, userId: string) {
   ]);
 
   return {
-    questions: questions.flatMap(({ options, ...q }) => {
+    questions: questions.flatMap(({ options, hint, ...q }) => {
       const parsed = parseOptions(options);
-      return parsed ? [{ ...q, options: parsed }] : [];
+      return parsed
+        ? [{ ...q, options: parsed, ...publicHint(hint, revealed.questions.has(q.id)) }]
+        : [];
     }),
-    orderTasks: tasks.map(({ id, promptBn, en }) => ({
+    orderTasks: tasks.map(({ id, promptBn, en, hint }) => ({
       id,
       promptBn,
       tokens: seededShuffle(tokenize(en), id),
+      ...publicHint(hint, revealed.tasks.has(id)),
     })),
     completed: progress !== null,
   };

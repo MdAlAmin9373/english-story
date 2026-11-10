@@ -8,6 +8,8 @@ const db = vi.hoisted(() => ({
   quizAttempt: { create: vi.fn(), findMany: vi.fn() },
   sentenceOrderTask: { findFirst: vi.fn() },
   orderTaskAttempt: { create: vi.fn(), findMany: vi.fn() },
+  quizHintUse: { findUnique: vi.fn() },
+  orderTaskHintUse: { findUnique: vi.fn() },
 }));
 const getCurrentUser = vi.hoisted(() => vi.fn());
 const getChapterLock = vi.hoisted(() => vi.fn());
@@ -33,6 +35,8 @@ beforeEach(() => {
   db.sentenceOrderTask.findFirst.mockResolvedValue(task);
   db.quizAttempt.findMany.mockResolvedValue([{ correct: true }]);
   db.orderTaskAttempt.findMany.mockResolvedValue([{ correct: true }]);
+  db.quizHintUse.findUnique.mockResolvedValue(null);
+  db.orderTaskHintUse.findUnique.mockResolvedValue(null);
 });
 
 describe("submitAnswer and the chapter lock", () => {

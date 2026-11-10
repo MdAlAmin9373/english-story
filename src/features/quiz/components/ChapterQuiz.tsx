@@ -17,7 +17,11 @@ export async function ChapterQuiz({
   userId: string;
   status: ChapterStatus;
 }) {
-  const { questions, orderTasks, completed } = await getChapterQuiz(chapterId, userId);
+  // Hint text arrives only for hints this user has already revealed (per-user, never cached).
+  const { questions, orderTasks, completed } = await getChapterQuiz(chapterId, userId, {
+    questions: new Set(status.hintQuestionIds),
+    tasks: new Set(status.hintTaskIds),
+  });
 
   // Answers are sent only for items this user has already solved.
   const answers = await getSolvedAnswers(

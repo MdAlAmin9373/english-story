@@ -6,12 +6,12 @@ import {
   chapterLock,
   chapterRequirements,
   chapterScore,
-  pointsForAttempt,
+  solvedPoints,
   storyProgress,
   storyScore,
   summarizeAttempts,
   type ChapterItems,
-  type Summary,
+  type HintUses,
 } from "./progress";
 
 // Database reads: call these inside a <Suspense> boundary.
@@ -25,8 +25,18 @@ function validQuestionIds(questions: { id: string; options: Prisma.JsonValue }[]
   return questions.filter((q) => parseOptions(q.options)).map((q) => q.id);
 }
 
+function hintUses(
+  quizHints: { questionId: string }[],
+  orderHints: { taskId: string }[],
+): HintUses {
+  return {
+    questions: new Set(quizHints.map((h) => h.questionId)),
+    tasks: new Set(orderHints.map((h) => h.taskId)),
+  };
+}
+
 export async function getChapterStatus(chapterId: string, userId: string) {
-  const [questions, tasks, quizAttempts, orderAttempts] = await Promise.all([
+  const [questions, tasks, quizAttempts, orderAttempts, quizHints, orderHints] = await Promise.all([
     db.quizQuestion.findMany({ where: { chapterId }, select: { id: true, options: true } }),
     db.sentenceOrderTask.findMany({ where: { chapterId }, select: { id: true } }),
     db.quizAttempt.findMany({
@@ -39,6 +49,14 @@ export async function getChapterStatus(chapterId: string, userId: string) {
       orderBy: oldestFirst,
       select: { taskId: true, correct: true },
     }),
+    db.quizHintUse.findMany({
+      where: { userId, question: { chapterId } },
+      select: { questionId: true },
+    }),
+    db.orderTaskHintUse.findMany({
+      where: { userId, task: { chapterId } },
+      select: { taskId: true },
+    }),
   ]);
 
   const items: ChapterItems = {
@@ -47,23 +65,18 @@ export async function getChapterStatus(chapterId: string, userId: string) {
   };
   const quiz = summarizeAttempts(quizAttempts.map((a) => ({ itemId: a.questionId, correct: a.correct })));
   const order = summarizeAttempts(orderAttempts.map((a) => ({ itemId: a.taskId, correct: a.correct })));
+  const hints = hintUses(quizHints, orderHints);
 
   return {
     requirements: chapterRequirements(items, quiz, order),
-    score: chapterScore(items, quiz, order),
+    score: chapterScore(items, quiz, order, hints),
     // Points per solved item (id → points), to seed the live client state.
-    solvedQuestions: solvedPoints(items.questionIds, quiz),
-    solvedTasks: solvedPoints(items.taskIds, order),
+    solvedQuestions: solvedPoints(items.questionIds, quiz, hints.questions),
+    solvedTasks: solvedPoints(items.taskIds, order, hints.tasks),
+    // Items whose hint this user has already opened (shown again after a reload).
+    hintQuestionIds: [...hints.questions],
+    hintTaskIds: [...hints.tasks],
   };
-}
-
-function solvedPoints(ids: readonly string[], summary: Summary): Record<string, number> {
-  const out: Record<string, number> = {};
-  for (const id of ids) {
-    const first = summary.get(id)?.firstCorrect;
-    if (first != null) out[id] = pointsForAttempt(first);
-  }
-  return out;
 }
 
 export type ChapterStatus = Awaited<ReturnType<typeof getChapterStatus>>;
@@ -99,7 +112,7 @@ async function getStoriesProgress(userId: string, storyWhere: Prisma.StoryWhereI
   const where = { ...storyWhere, status: "PUBLISHED" } as const;
   const chapterWhere = { status: "PUBLISHED", story: where } as const;
 
-  const [stories, completions, quizAttempts, orderAttempts] = await Promise.all([
+  const [stories, completions, quizAttempts, orderAttempts, quizHints, orderHints] = await Promise.all([
     db.story.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -136,10 +149,20 @@ async function getStoriesProgress(userId: string, storyWhere: Prisma.StoryWhereI
       orderBy: oldestFirst,
       select: { taskId: true, correct: true, createdAt: true },
     }),
+    db.quizHintUse.findMany({
+      where: { userId, question: { chapter: chapterWhere } },
+      select: { questionId: true },
+    }),
+    db.orderTaskHintUse.findMany({
+      where: { userId, task: { chapter: chapterWhere } },
+      select: { taskId: true },
+    }),
   ]);
 
   const quiz = summarizeAttempts(quizAttempts.map((a) => ({ itemId: a.questionId, correct: a.correct })));
   const order = summarizeAttempts(orderAttempts.map((a) => ({ itemId: a.taskId, correct: a.correct })));
+  // Item ids are unique across chapters, so one set serves every chapter.
+  const hints = hintUses(quizHints, orderHints);
   const completedAt = new Map(completions.map((c) => [c.chapterId, c.completedAt]));
 
   // Latest activity per chapter: a completion or any attempt.
@@ -177,7 +200,7 @@ async function getStoriesProgress(userId: string, storyWhere: Prisma.StoryWhereI
         requiresLogin: c.requiresLogin,
         completed: completedAt.has(c.id),
         lock: chapterLock(c.order, publishedOrders, completedOrders),
-        score: chapterScore(items, quiz, order),
+        score: chapterScore(items, quiz, order, hints),
       };
     });
 

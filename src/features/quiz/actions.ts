@@ -6,7 +6,7 @@ import { getCurrentUser } from "@/features/auth/session";
 import { itemPoints } from "@/features/progress/progress";
 import { getChapterLock, getChapterStatus } from "@/features/progress/queries";
 import { isCorrectChoice, isCorrectOrder, parseOptions } from "./check";
-import { answerSchema, chapterSchema, orderSchema } from "./schemas";
+import { answerSchema, chapterSchema, hintSchema, orderSchema } from "./schemas";
 
 type Failure = { ok: false; error: string };
 // attempt is this attempt's number for the item; points are from the first correct attempt.
@@ -21,11 +21,14 @@ export type OrderResult =
   | (Graded & { correct: false })
   | Failure;
 export type CompleteResult = { ok: true } | Failure;
+// Only the hint text, nothing else about the item.
+export type HintResult = { ok: true; hint: string } | Failure;
 
 const MSG = {
   loginRequired: "এটি করতে লগইন করুন।",
   invalid: "অনুরোধটি সঠিক নয়।",
   notFound: "প্রশ্নটি পাওয়া যায়নি।",
+  noHint: "এখানে কোনো ইঙ্গিত নেই।",
   locked: "আগের অধ্যায় শেষ করুন।",
   unfinished: "সব প্রশ্ন ও বাক্য সাজানো সঠিক করুন।",
 } as const;
@@ -61,13 +64,20 @@ export async function submitAnswer(input: unknown): Promise<AnswerResult> {
   await db.quizAttempt.create({
     data: { userId: user.id, questionId: question.id, chosenIndex, correct },
   });
-  const attempts = await db.quizAttempt.findMany({
-    where: { userId: user.id, questionId: question.id },
-    orderBy: oldestFirst,
-    select: { correct: true },
-  });
+  const [attempts, hintUse] = await Promise.all([
+    db.quizAttempt.findMany({
+      where: { userId: user.id, questionId: question.id },
+      orderBy: oldestFirst,
+      select: { correct: true },
+    }),
+    db.quizHintUse.findUnique({
+      where: { userId_questionId: { userId: user.id, questionId: question.id } },
+      select: { id: true },
+    }),
+  ]);
 
-  const graded = { ok: true, attempt: attempts.length, points: itemPoints(attempts) } as const;
+  const points = itemPoints(attempts, hintUse !== null);
+  const graded = { ok: true, attempt: attempts.length, points } as const;
   return correct
     ? { ...graded, correct, correctIndex: question.correctIndex }
     : { ...graded, correct };
@@ -92,14 +102,81 @@ export async function checkOrder(input: unknown): Promise<OrderResult> {
 
   const correct = isCorrectOrder(task.en, tokens);
   await db.orderTaskAttempt.create({ data: { userId: user.id, taskId: task.id, correct } });
-  const attempts = await db.orderTaskAttempt.findMany({
-    where: { userId: user.id, taskId: task.id },
-    orderBy: oldestFirst,
-    select: { correct: true },
-  });
+  const [attempts, hintUse] = await Promise.all([
+    db.orderTaskAttempt.findMany({
+      where: { userId: user.id, taskId: task.id },
+      orderBy: oldestFirst,
+      select: { correct: true },
+    }),
+    db.orderTaskHintUse.findUnique({
+      where: { userId_taskId: { userId: user.id, taskId: task.id } },
+      select: { id: true },
+    }),
+  ]);
 
-  const graded = { ok: true, attempt: attempts.length, points: itemPoints(attempts) } as const;
+  const points = itemPoints(attempts, hintUse !== null);
+  const graded = { ok: true, attempt: attempts.length, points } as const;
   return correct ? { ...graded, correct, answer: task.en } : { ...graded, correct };
+}
+
+// Reveals a hint. It is recorded only while the item is unsolved, so a record always means
+// "hint used before the first correct answer" (points capped, see itemScore). Recording is
+// an INSERT … ON CONFLICT DO NOTHING on (userId, item id): double clicks and parallel
+// requests can never create two rows.
+export async function revealHint(input: unknown): Promise<HintResult> {
+  // 1. Logged in.
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: MSG.loginRequired };
+
+  const parsed = hintSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: MSG.invalid };
+  const { kind, id } = parsed.data;
+  const where = { id, chapter: published };
+  const select = { id: true, hint: true, ...lockFields } as const;
+
+  // 2. The item exists (as readers see it) and has a hint.
+  const item =
+    kind === "question"
+      ? await db.quizQuestion
+          .findFirst({ where, select: { ...select, options: true } })
+          .then((q) => (q && parseOptions(q.options) ? q : null))
+      : await db.sentenceOrderTask.findFirst({ where, select });
+  if (!item) return { ok: false, error: MSG.notFound };
+  if (!item.hint) return { ok: false, error: MSG.noHint };
+
+  // 3. The chapter is open for this user.
+  if ((await getChapterLock(item.chapter, user.id)).locked) {
+    return { ok: false, error: MSG.locked };
+  }
+
+  // 4. Already solved: show the hint, record nothing (no penalty after the fact).
+  const userId = user.id;
+  const solved =
+    kind === "question"
+      ? await db.quizAttempt.findFirst({
+          where: { userId, questionId: item.id, correct: true },
+          select: { id: true },
+        })
+      : await db.orderTaskAttempt.findFirst({
+          where: { userId, taskId: item.id, correct: true },
+          select: { id: true },
+        });
+
+  // 5. Otherwise record the use (idempotent), and only then return the text.
+  if (!solved) {
+    if (kind === "question") {
+      await db.quizHintUse.createMany({
+        data: [{ userId, questionId: item.id }],
+        skipDuplicates: true,
+      });
+    } else {
+      await db.orderTaskHintUse.createMany({
+        data: [{ userId, taskId: item.id }],
+        skipDuplicates: true,
+      });
+    }
+  }
+  return { ok: true, hint: item.hint };
 }
 
 // Re-checks the lock and the requirements on the server; the button state is never trusted.

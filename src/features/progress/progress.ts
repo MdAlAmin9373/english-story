@@ -3,23 +3,37 @@
 
 export const POINTS = { first: 5, second: 2, later: 1 } as const;
 export const MAX_POINTS = POINTS.first;
+// A hint seen before the first correct answer caps that item's points.
+export const HINT_CAP = 1;
 
 export type Attempt = { itemId: string; correct: boolean };
 export type ItemSummary = { attempts: number; firstCorrect: number | null };
 export type ChapterItems = { questionIds: readonly string[]; taskIds: readonly string[] };
 export type Score = { points: number; max: number; firstTry: number; items: number };
+// Item ids with a hint-use record for this user. Hints are recorded only while an item is
+// unsolved, so membership means "hint used before the first correct answer".
+export type HintUses = { questions: ReadonlySet<string>; tasks: ReadonlySet<string> };
 
-// Points come from the attempt number (1-based) of the first correct attempt only.
-export function pointsForAttempt(firstCorrect: number | null): number {
+export const NO_HINTS: HintUses = { questions: new Set(), tasks: new Set() };
+
+function pointsForAttempt(firstCorrect: number | null): number {
   if (firstCorrect === null) return 0;
   if (firstCorrect === 1) return POINTS.first;
   if (firstCorrect === 2) return POINTS.second;
   return POINTS.later;
 }
 
-export function itemPoints(attempts: readonly { correct: boolean }[]): number {
+// THE scoring rule; every score on the site comes from here. Points come from the attempt
+// number (1-based) of the first correct attempt only: 5 / 2 / 1 (3rd or later) / 0 (never).
+// With a hint the points are capped at 1, so any correct answer gives 1 and never gives 0.
+export function itemScore(firstCorrect: number | null, hintUsed: boolean): number {
+  const points = pointsForAttempt(firstCorrect);
+  return hintUsed ? Math.min(points, HINT_CAP) : points;
+}
+
+export function itemPoints(attempts: readonly { correct: boolean }[], hintUsed = false): number {
   const index = attempts.findIndex((a) => a.correct);
-  return pointsForAttempt(index === -1 ? null : index + 1);
+  return itemScore(index === -1 ? null : index + 1, hintUsed);
 }
 
 // Attempt count and first-correct attempt number per item; later attempts never undo a solve.
@@ -54,18 +68,42 @@ export function chapterRequirements(items: ChapterItems, quiz: Summary, order: S
 
 export type ChapterRequirements = ReturnType<typeof chapterRequirements>;
 
-export function chapterScore(items: ChapterItems, quiz: Summary, order: Summary): Score {
-  const firsts = [...scoreIds(items.questionIds, quiz), ...scoreIds(items.taskIds, order)];
+// Without hint uses (the default) this is exactly the score before hints existed.
+// firstTry counts full-point items: first try without a hint (same rule as the live client).
+export function chapterScore(
+  items: ChapterItems,
+  quiz: Summary,
+  order: Summary,
+  hints: HintUses = NO_HINTS,
+): Score {
+  const points = [
+    ...scoreIds(items.questionIds, quiz, hints.questions),
+    ...scoreIds(items.taskIds, order, hints.tasks),
+  ];
   return {
-    points: firsts.reduce<number>((sum, n) => sum + pointsForAttempt(n), 0),
-    max: firsts.length * MAX_POINTS,
-    firstTry: firsts.filter((n) => n === 1).length,
-    items: firsts.length,
+    points: points.reduce((sum, p) => sum + p, 0),
+    max: points.length * MAX_POINTS,
+    firstTry: points.filter((p) => p === MAX_POINTS).length,
+    items: points.length,
   };
 }
 
-function scoreIds(ids: readonly string[], summary: Summary) {
-  return ids.map((id) => summary.get(id)?.firstCorrect ?? null);
+function scoreIds(ids: readonly string[], summary: Summary, hinted: ReadonlySet<string>) {
+  return ids.map((id) => itemScore(summary.get(id)?.firstCorrect ?? null, hinted.has(id)));
+}
+
+// Points per solved item (id → points), to seed the live client state.
+export function solvedPoints(
+  ids: readonly string[],
+  summary: Summary,
+  hinted: ReadonlySet<string>,
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const id of ids) {
+    const first = summary.get(id)?.firstCorrect;
+    if (first != null) out[id] = itemScore(first, hinted.has(id));
+  }
+  return out;
 }
 
 export function storyScore(scores: readonly Score[]): Score {
