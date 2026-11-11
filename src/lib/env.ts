@@ -25,3 +25,42 @@ export function serverEnv(): ServerEnv {
   }
   return cached;
 }
+
+// Google sign-in config, kept apart from serverEnv() so a missing Google
+// variable can never break OTP login.
+
+// https, or http only for a local host (dev and `next start` on this machine).
+function isAllowedAppUrl(value: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return false;
+  }
+  if (url.username || url.password) return false;
+  if (url.protocol === "https:") return true;
+  return url.protocol === "http:" && ["localhost", "127.0.0.1"].includes(url.hostname);
+}
+
+const googleEnvSchema = z.object({
+  GOOGLE_CLIENT_ID: z.string().trim().min(1),
+  GOOGLE_CLIENT_SECRET: z.string().trim().min(1),
+  APP_URL: z
+    .string()
+    .trim()
+    .refine(isAllowedAppUrl)
+    .transform((v) => new URL(v).origin),
+});
+
+export type GoogleEnv = z.infer<typeof googleEnvSchema>;
+
+// Not cached: only read when a Google login starts or returns. The error
+// names the variables only, never their values.
+export function googleEnv(env: Record<string, string | undefined> = process.env): GoogleEnv {
+  const parsed = googleEnvSchema.safeParse(env);
+  if (!parsed.success) {
+    const names = parsed.error.issues.map((i) => i.path.join(".")).join(", ");
+    throw new Error(`Invalid Google environment variables: ${names}`);
+  }
+  return parsed.data;
+}
