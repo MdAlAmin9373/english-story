@@ -75,7 +75,15 @@ test("privacy names Gmail for support email but no Gmail address", () => {
   const text = JSON.stringify(PRIVACY);
   expect(text).toContain("Gmail");
   expect(text).not.toMatch(/@gmail\.com/i);
-  expect(text).not.toMatch(/Resend/i);
+});
+
+test("privacy names Resend in the services section", () => {
+  const services = PRIVACY.sections.find((s) => s.id === "services")!;
+  const text = JSON.stringify(services);
+  expect(text).toContain('{"b":"Resend"}');
+  expect(text).toContain(
+    "লগইন কোড ইমেইলে পাঠায়। তাই কোড পাঠানোর সময় Resend আপনার ইমেইল ঠিকানা ও কোডটি পায়।",
+  );
 });
 
 test("footer shows copyright, both legal links and the support email", () => {

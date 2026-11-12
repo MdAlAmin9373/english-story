@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { serverEnv } from "@/lib/env";
 import { deliverOtp } from "./delivery";
+import { OtpDeliveryError } from "./delivery-error";
 import { DEFAULT_NEXT_PATH, loginPathWithNext, safeNextPath } from "./next-path";
 import { checkOtp, generateCode, hashCode, otpExpiry } from "./otp";
 import { scheduleCleanup } from "./cleanup";
@@ -28,6 +29,17 @@ const MSG = {
   expired: "কোডটির মেয়াদ শেষ হয়ে গেছে। নতুন কোড নিন।",
   tooManyAttempts: "অনেকবার ভুল কোড দেওয়া হয়েছে। নতুন কোড নিন।",
 } as const;
+
+// Logs only a category plus an HTTP status or variable names; never the email,
+// code, API key, error message or provider response.
+function logDeliveryFailure(err: unknown): void {
+  if (err instanceof OtpDeliveryError) {
+    if (err.detail === undefined) console.error("[otp] delivery failed:", err.category);
+    else console.error("[otp] delivery failed:", err.category, err.detail);
+  } else {
+    console.error("[otp] delivery failed:", "unknown");
+  }
+}
 
 async function clientIpHash(pepper: string): Promise<string | null> {
   const h = await headers();
@@ -52,33 +64,46 @@ export async function requestOtp(
     return { error: MSG.rateLimited };
   }
 
+  // 1. Create the new code. Older codes stay valid until this one is sent.
+  //    The row also holds the rate-limit slot while the email is being sent.
   const code = generateCode();
-  const [, otp] = await db.$transaction([
-    // Only the newest code is valid.
-    db.otpCode.updateMany({
-      where: { email, used: false },
-      data: { used: true },
-    }),
-    db.otpCode.create({
-      data: {
-        email,
-        codeHash: hashCode(email, code, OTP_PEPPER),
-        expiresAt: otpExpiry(),
-        ipHash,
-      },
-      select: { id: true },
-    }),
-  ]);
+  const otp = await db.otpCode.create({
+    data: {
+      email,
+      codeHash: hashCode(email, code, OTP_PEPPER),
+      expiresAt: otpExpiry(),
+      ipHash,
+    },
+    select: { id: true, createdAt: true },
+  });
 
   // Bounded cleanup of OTP rows older than 1 day, after the response. Never throws.
   scheduleCleanup("otp");
 
+  // 2. Send it. On failure the unsent code is deleted, so it can never work and
+  //    does not count toward the rate limit; the previous code keeps working.
   try {
     await deliverOtp(email, code);
   } catch (err) {
-    await db.otpCode.update({ where: { id: otp.id }, data: { used: true } });
-    console.error("[otp] delivery failed:", (err as Error).message);
+    logDeliveryFailure(err);
+    try {
+      await db.otpCode.deleteMany({ where: { id: otp.id } });
+    } catch {
+      console.error("[otp] delivery failed:", "delete_failed");
+    }
     return { error: MSG.sendFailed };
+  }
+
+  // 3. Sent: only the newest code is valid. Only codes older than this one are
+  //    invalidated, so a slower concurrent request never cancels a newer code.
+  try {
+    await db.otpCode.updateMany({
+      where: { email, used: false, createdAt: { lt: otp.createdAt } },
+      data: { used: true },
+    });
+  } catch {
+    // The new code was sent and works; older ones still expire within 10 minutes.
+    console.error("[otp] invalidate failed:", "db_error");
   }
 
   await setPendingEmail(email);

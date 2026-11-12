@@ -26,6 +26,43 @@ export function serverEnv(): ServerEnv {
   return cached;
 }
 
+// Resend config, checked only when OTP_DELIVERY="resend" and only at send time,
+// so a Resend mistake can never break code verification or Google sign-in.
+
+/** Thrown for missing or invalid variables; `variables` holds names only, never values. */
+export class EnvConfigError extends Error {
+  constructor(readonly variables: string[]) {
+    super(`Invalid server environment variables: ${variables.join(", ")}`);
+    this.name = "EnvConfigError";
+  }
+}
+
+// "Name <address>" or a bare address; the name may not contain <, > or line breaks.
+const FROM_PATTERN = /^(?:([^<>\r\n]*?)\s*<([^<>\s]+)>|([^<>\s]+))$/;
+
+function isValidFrom(value: string): boolean {
+  const match = FROM_PATTERN.exec(value);
+  if (!match) return false;
+  const address = match[2] ?? match[3];
+  return z.email().safeParse(address).success;
+}
+
+const resendEnvSchema = z.object({
+  RESEND_API_KEY: z.string().trim().regex(/^re_\S+$/),
+  EMAIL_FROM: z.string().trim().refine(isValidFrom),
+});
+
+export type ResendEnv = z.infer<typeof resendEnvSchema>;
+
+// Not cached: read on each send, so a fixed value takes effect without a restart.
+export function resendEnv(env: Record<string, string | undefined> = process.env): ResendEnv {
+  const parsed = resendEnvSchema.safeParse(env);
+  if (!parsed.success) {
+    throw new EnvConfigError([...new Set(parsed.error.issues.map((i) => i.path.join(".")))]);
+  }
+  return parsed.data;
+}
+
 // Google sign-in config, kept apart from serverEnv() so a missing Google
 // variable can never break OTP login.
 

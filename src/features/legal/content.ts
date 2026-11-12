@@ -211,6 +211,10 @@ export const PRIVACY: LegalDoc = {
               ": শুধু Google দিয়ে লগইনের জন্য। আপনি \"Google দিয়ে লগইন\" বোতাম চাপলে তবেই আপনার ব্রাউজার accounts.google.com-এ যায়। Google জানতে পারে যে আপনি English Story-তে লগইন করেছেন।",
             ],
             [
+              { b: "Resend" },
+              ": লগইন কোড ইমেইলে পাঠায়। তাই কোড পাঠানোর সময় Resend আপনার ইমেইল ঠিকানা ও কোডটি পায়।",
+            ],
+            [
               { b: "Cloudflare" },
               ": আমাদের DNS এবং ",
               EMAIL,
