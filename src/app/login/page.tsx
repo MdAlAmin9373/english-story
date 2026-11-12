@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import { LoginOptions } from "@/features/auth/components/LoginOptions";
 import { googleErrorMessage } from "@/features/auth/google/errors";
@@ -16,6 +17,18 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
       <Suspense fallback={<p className="text-ink-muted">লোড হচ্ছে…</p>}>
         <LoginPanel searchParams={searchParams} />
       </Suspense>
+      {/* Outside Suspense: part of the static shell. */}
+      <p className="text-sm text-ink-muted">
+        লগইন করে আপনি আমাদের{" "}
+        <Link href="/terms" className="text-accent underline underline-offset-2 hover:no-underline">
+          শর্তাবলী
+        </Link>{" "}
+        ও{" "}
+        <Link href="/privacy" className="text-accent underline underline-offset-2 hover:no-underline">
+          গোপনীয়তা নীতি
+        </Link>{" "}
+        মেনে নিচ্ছেন।
+      </p>
     </main>
   );
 }
