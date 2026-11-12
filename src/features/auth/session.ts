@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import type { Role } from "@prisma/client";
 import { db } from "@/lib/db";
+import { scheduleCleanup } from "./cleanup";
 import { loginPathWithNext } from "./next-path";
 import { emailSchema } from "./schemas";
 
@@ -36,6 +37,9 @@ export async function createSession(userId: string): Promise<void> {
   });
 
   (await cookies()).set(SESSION_COOKIE, token, { ...baseCookie, expires: expiresAt });
+
+  // Bounded cleanup of long-expired sessions, after the response. Never throws.
+  scheduleCleanup("session");
 }
 
 // Reads a cookie and the database: call it inside a <Suspense> boundary.

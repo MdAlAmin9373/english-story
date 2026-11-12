@@ -8,6 +8,7 @@ import { serverEnv } from "@/lib/env";
 import { deliverOtp } from "./delivery";
 import { DEFAULT_NEXT_PATH, loginPathWithNext, safeNextPath } from "./next-path";
 import { checkOtp, generateCode, hashCode, otpExpiry } from "./otp";
+import { scheduleCleanup } from "./cleanup";
 import { canRequestOtp } from "./rate-limit";
 import { codeSchema, emailSchema } from "./schemas";
 import {
@@ -69,6 +70,9 @@ export async function requestOtp(
     }),
   ]);
 
+  // Bounded cleanup of OTP rows older than 1 day, after the response. Never throws.
+  scheduleCleanup("otp");
+
   try {
     await deliverOtp(email, code);
   } catch (err) {
@@ -99,7 +103,8 @@ export async function verifyOtp(
   const code = parsed.data;
 
   const latest = await db.otpCode.findFirst({
-    where: { email, used: false },
+    // Expired codes are never touched (no attempt increment, no race with cleanup).
+    where: { email, used: false, expiresAt: { gt: new Date() } },
     orderBy: { createdAt: "desc" },
     select: { id: true },
   });
