@@ -25,7 +25,7 @@ Go to **console.cloud.google.com**, choose or create a project, then open **Goog
 
 ### Data access (scopes)
 
-- Add only `openid`, `.../auth/userinfo.email` and `.../auth/userinfo.profile`.
+- Add only `openid` and `.../auth/userinfo.email` (no `profile`: we never use the name or picture).
 - These are non-sensitive scopes, so Google doesn't need to verify the app.
 
 ### Clients

@@ -80,7 +80,7 @@ describe("buildGoogleAuthUrl", () => {
       client_id: base.GOOGLE_CLIENT_ID,
       redirect_uri: "https://netenglish.online/auth/google/callback",
       response_type: "code",
-      scope: "openid email profile",
+      scope: "openid email",
       state: "S",
       nonce: "N",
       code_challenge: "C",

@@ -75,8 +75,10 @@
   --color-focus: var(--focus);
 }
 
+/* --font-hind-siliguri is set on <html> by next/font (self-hosted, see app/layout.tsx).
+   :root is that same <html> element, so the var() resolves here. */
 @theme {
-  --font-sans: "Hind Siliguri", system-ui, sans-serif;
+  --font-sans: var(--font-hind-siliguri), system-ui, sans-serif;
 }
 
 body {

@@ -65,7 +65,7 @@ describe("startGoogleLogin", () => {
     const p = url.searchParams;
     expect(p.get("client_id")).toBe(CLIENT_ID);
     expect(p.get("response_type")).toBe("code");
-    expect(p.get("scope")).toBe("openid email profile");
+    expect(p.get("scope")).toBe("openid email");
     expect(p.get("prompt")).toBe("select_account");
     expect(p.get("code_challenge_method")).toBe("S256");
     expect(url.toString()).not.toContain(SECRET);

@@ -1,7 +1,17 @@
 import type { Metadata } from "next";
+import { Hind_Siliguri } from "next/font/google";
 import { SiteHeader } from "@/components/SiteHeader";
 import { THEME_INIT_SCRIPT } from "@/features/theme/init-script";
 import "./globals.css";
+
+// Self-hosted: next/font downloads the files at build time and serves them from
+// our own domain, so visitors' browsers never contact Google.
+const hindSiliguri = Hind_Siliguri({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["bengali", "latin"],
+  display: "swap",
+  variable: "--font-hind-siliguri",
+});
 
 export const metadata: Metadata = {
   title: "Learn English by stories",
@@ -11,22 +21,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     // suppressHydrationWarning: the inline script may set data-theme before React hydrates.
-    <html lang="bn" className="h-full antialiased" suppressHydrationWarning>
+    <html lang="bn" className={`${hindSiliguri.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
         {/* Static constant string, nothing interpolated: the only allowed dangerouslySetInnerHTML. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin=""
-        />
-        {/* Root layout applies to every page; this rule targets the Pages Router. */}
-        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap"
-        />
       </head>
       <body className="min-h-full flex flex-col">
         <SiteHeader />
