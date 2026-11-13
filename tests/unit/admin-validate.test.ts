@@ -1,5 +1,7 @@
 // @vitest-environment node
 import { describe, expect, test } from "vitest";
+import { z } from "zod";
+import { CATEGORY_VALUES } from "@/features/stories/categories";
 import {
   chapterSchema,
   questionSchema,
@@ -113,6 +115,7 @@ describe("storySchema", () => {
     summaryBn: "একটি ঘুড়ির গল্প।",
     summaryEn: "A story about a kite.",
     genre: "FRIENDSHIP",
+    category: "TRAVEL",
     level: "2",
     status: "DRAFT",
   };
@@ -121,6 +124,37 @@ describe("storySchema", () => {
     const parsed = storySchema.parse(story);
     expect(parsed.slug).toBe("the-blue-kite");
     expect(parsed.level).toBe(2);
+    expect(parsed.category).toBe("TRAVEL");
+  });
+
+  test("accepts every category value", () => {
+    for (const category of CATEGORY_VALUES) {
+      expect(storySchema.safeParse({ ...story, category }).success).toBe(true);
+    }
+  });
+
+  test("rejects a missing, unknown or wrongly cased category", () => {
+    const withoutCategory: Partial<typeof story> = { ...story };
+    delete withoutCategory.category;
+    for (const input of [
+      withoutCategory,
+      { ...story, category: "" },
+      { ...story, category: "HORROR" },
+      { ...story, category: "travel" }, // slug, not the enum value
+      { ...story, category: "Travel" },
+    ]) {
+      const result = storySchema.safeParse(input);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(z.flattenError(result.error).fieldErrors.category).toEqual(["বিভাগ বেছে নিন।"]);
+      }
+    }
+  });
+
+  test("rejects the reserved slug used by category pages", () => {
+    expect(storySchema.safeParse({ ...story, slug: "category" }).success).toBe(false);
+    expect(storySchema.safeParse({ ...story, slug: " Category " }).success).toBe(false);
+    expect(storySchema.safeParse({ ...story, slug: "category-kite" }).success).toBe(true);
   });
 
   test("rejects an empty slug, bad level, unknown genre or blank title", () => {

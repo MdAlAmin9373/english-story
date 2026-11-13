@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CATEGORY_VALUES } from "@/features/stories/categories";
 import { toBnDigits } from "@/features/stories/labels";
 import { GENRES, NOTE_KINDS, QUESTION_TYPES, STATUSES } from "./constants";
 import {
@@ -26,6 +27,10 @@ const text = (max: number) =>
     .max(max, `সর্বোচ্চ ${toBnDigits(max)} অক্ষর লেখা যাবে।`);
 
 export const idSchema = z.string().min(1).max(64);
+
+// /stories/category/[slug] is a static segment under /stories, so a story with this
+// slug would be unreachable at /stories/category.
+export const RESERVED_STORY_SLUGS: readonly string[] = ["category"];
 
 // Optional hint: normalized first (see normalizeHint), then length-checked; null = no hint.
 // The raw cap only bounds the request size.
@@ -56,13 +61,17 @@ export const storySchema = z.object({
         .string()
         .min(1, "স্লাগ লিখুন (ইংরেজি অক্ষর, সংখ্যা ও হাইফেন)।")
         .max(80, "স্লাগ সর্বোচ্চ ৮০ অক্ষরের হতে পারে।")
-        .regex(SLUG_PATTERN, "স্লাগে শুধু ইংরেজি ছোট হাতের অক্ষর, সংখ্যা ও হাইফেন চলবে।"),
+        .regex(SLUG_PATTERN, "স্লাগে শুধু ইংরেজি ছোট হাতের অক্ষর, সংখ্যা ও হাইফেন চলবে।")
+        .refine((slug) => !RESERVED_STORY_SLUGS.includes(slug), {
+          message: "এই স্লাগটি সাইটের জন্য সংরক্ষিত। অন্য স্লাগ দিন।",
+        }),
     ),
   titleBn: text(120),
   titleEn: text(120),
   summaryBn: text(1000),
   summaryEn: text(1000),
   genre: z.enum(GENRES, "ধরন বেছে নিন।"),
+  category: z.enum(CATEGORY_VALUES, "বিভাগ বেছে নিন।"),
   level: z.coerce
     .number("স্তর বেছে নিন।")
     .int("স্তর বেছে নিন।")

@@ -21,6 +21,7 @@ const story = {
   summaryEn:
     "Ratul makes a red kite. The wind carries it away, and while looking for it he finds a new friend.",
   genre: "FRIENDSHIP",
+  category: "DAILY_LIFE", // home page shelf (see src/features/stories/categories.ts)
   level: 1,
 } as const;
 

@@ -1,11 +1,12 @@
 "use server";
 
-import { refresh } from "next/cache";
+import { refresh, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/features/auth/session";
+import { STORIES_TAG } from "@/features/stories/cache";
 import {
   chapterItemMoveSchema,
   chapterSchema,
@@ -24,6 +25,8 @@ import { nextOrder, swapTarget } from "./validate";
 
 // Every action calls requireAdmin() first: the admin UI is never trusted.
 // Nothing is ever deleted; stories are hidden by setting status to DRAFT.
+// Story and chapter writes also call updateTag(STORIES_TAG) so the cached public lists
+// (home shelf counts, /stories, category pages) show the change on the next request.
 
 export type AdminFormState = {
   error?: string;
@@ -127,6 +130,7 @@ export async function createStory(
     console.error("[admin] createStory failed:", (err as Error).message);
     return { error: MSG.failed, values };
   }
+  updateTag(STORIES_TAG);
   redirect(`/admin/stories/${storyId}/chapters/${chapterId}`);
 }
 
@@ -154,6 +158,7 @@ export async function updateStory(
     console.error("[admin] updateStory failed:", (err as Error).message);
     return { error: MSG.failed, values };
   }
+  updateTag(STORIES_TAG);
   refresh();
   return { saved: true };
 }
@@ -168,6 +173,7 @@ export async function setStoryStatus(formData: FormData): Promise<void> {
     where: { id: parsed.data.id },
     data: { status: parsed.data.status },
   });
+  updateTag(STORIES_TAG);
   refresh();
 }
 
@@ -205,6 +211,7 @@ export async function createChapter(
     console.error("[admin] createChapter failed:", (err as Error).message);
     return { error: MSG.failed, values };
   }
+  updateTag(STORIES_TAG);
   redirect(`/admin/stories/${story.id}/chapters/${chapterId}`);
 }
 
@@ -227,6 +234,7 @@ export async function updateChapter(
     console.error("[admin] updateChapter failed:", (err as Error).message);
     return { error: MSG.failed, values };
   }
+  updateTag(STORIES_TAG);
   refresh();
   return { saved: true };
 }
@@ -240,6 +248,7 @@ export async function setChapterStatus(formData: FormData): Promise<void> {
     where: { id: parsed.data.id },
     data: { status: parsed.data.status },
   });
+  updateTag(STORIES_TAG);
   refresh();
 }
 
@@ -257,6 +266,7 @@ export async function moveChapter(formData: FormData): Promise<void> {
   await moveRow(chapter.story.chapters, parsed.data.id, parsed.data.direction, (tx, id, order) =>
     tx.chapter.update({ where: { id }, data: { order } }),
   );
+  updateTag(STORIES_TAG);
   refresh();
 }
 

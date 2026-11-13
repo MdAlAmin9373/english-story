@@ -74,6 +74,16 @@ enum PublishStatus {
   PUBLISHED
 }
 
+// Home page bookshelf; metadata (slugs, names, colors) lives in features/stories/categories.ts.
+enum StoryCategory {
+  DAILY_LIFE
+  MYSTERY_ADVENTURE
+  FUNNY
+  WORK_CAREER
+  TRAVEL
+  FABLES
+}
+
 model Story {
   id        String        @id @default(cuid())
   slug      String        @unique
@@ -82,6 +92,7 @@ model Story {
   summaryBn String
   summaryEn String
   genre     Genre
+  category  StoryCategory @default(DAILY_LIFE)
   level     Int // 1 = beginner … 5 = advanced
   status    PublishStatus @default(DRAFT)
   createdAt DateTime      @default(now())
@@ -89,6 +100,8 @@ model Story {
   chapters  Chapter[]
 
   @@index([status, createdAt])
+  // Published stories of one category, newest first; also serves per-category counts.
+  @@index([status, category, createdAt])
   @@index([genre])
 }
 

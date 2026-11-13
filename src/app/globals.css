@@ -19,6 +19,27 @@
   --danger: oklch(80.8% 0.114 19.571); /* red-300 */
   --danger-strong: oklch(70.4% 0.191 22.216); /* red-400 */
   --focus: #f5b942;
+  /* Bookshelf (home page): cloth-bound covers; ink keeps >= 4.5:1 on cover and spine. */
+  --shelf: #5b4632;
+  --shelf-edge: #3b2c1e;
+  --cat-daily-life-cover: #2e5e4e;
+  --cat-daily-life-spine: #234a3d;
+  --cat-daily-life-ink: #f6efdc;
+  --cat-mystery-adventure-cover: #4d3166;
+  --cat-mystery-adventure-spine: #3b244f;
+  --cat-mystery-adventure-ink: #f6efdc;
+  --cat-funny-cover: #8c4a14;
+  --cat-funny-spine: #6e390d;
+  --cat-funny-ink: #f6efdc;
+  --cat-work-career-cover: #2f5876;
+  --cat-work-career-spine: #23445c;
+  --cat-work-career-ink: #f6efdc;
+  --cat-travel-cover: #7d2f2c;
+  --cat-travel-spine: #632420;
+  --cat-travel-ink: #f6efdc;
+  --cat-fables-cover: #5a5a1f;
+  --cat-fables-spine: #464616;
+  --cat-fables-ink: #f6efdc;
 }
 
 [data-theme="black"] {
@@ -37,6 +58,26 @@
   --danger: oklch(80.8% 0.114 19.571);
   --danger-strong: oklch(70.4% 0.191 22.216);
   --focus: #f5b942;
+  --shelf: #4a3a2a;
+  --shelf-edge: #2e2318;
+  --cat-daily-life-cover: #2a5446;
+  --cat-daily-life-spine: #1f4136;
+  --cat-daily-life-ink: #f3ecda;
+  --cat-mystery-adventure-cover: #462c5d;
+  --cat-mystery-adventure-spine: #352146;
+  --cat-mystery-adventure-ink: #f3ecda;
+  --cat-funny-cover: #82440f;
+  --cat-funny-spine: #66350b;
+  --cat-funny-ink: #f3ecda;
+  --cat-work-career-cover: #2b506c;
+  --cat-work-career-spine: #203d53;
+  --cat-work-career-ink: #f3ecda;
+  --cat-travel-cover: #742b28;
+  --cat-travel-spine: #5a211e;
+  --cat-travel-ink: #f3ecda;
+  --cat-fables-cover: #53531c;
+  --cat-fables-spine: #404014;
+  --cat-fables-ink: #f3ecda;
 }
 
 [data-theme="paper"] {
@@ -55,6 +96,26 @@
   --danger: #a52a1f;
   --danger-strong: #c2412f;
   --focus: #8a5300;
+  --shelf: #a77b4f;
+  --shelf-edge: #7a5634;
+  --cat-daily-life-cover: #33705c;
+  --cat-daily-life-spine: #285a49;
+  --cat-daily-life-ink: #fbf7ee;
+  --cat-mystery-adventure-cover: #5a3a78;
+  --cat-mystery-adventure-spine: #472d5f;
+  --cat-mystery-adventure-ink: #fbf7ee;
+  --cat-funny-cover: #9a5317;
+  --cat-funny-spine: #7c4211;
+  --cat-funny-ink: #fbf7ee;
+  --cat-work-career-cover: #336a8f;
+  --cat-work-career-spine: #285573;
+  --cat-work-career-ink: #fbf7ee;
+  --cat-travel-cover: #8f3833;
+  --cat-travel-spine: #742c28;
+  --cat-travel-ink: #fbf7ee;
+  --cat-fables-cover: #6a6a24;
+  --cat-fables-spine: #55551c;
+  --cat-fables-ink: #fbf7ee;
 }
 
 /* Utilities backed by the tokens, e.g. bg-surface, border-line, text-ink, bg-success-strong/10. */
@@ -86,4 +147,227 @@ body {
   color: var(--text);
   font-family: var(--font-sans);
   line-height: 1.7;
+}
+
+/* Home page bookshelf (features/stories/components/Bookshelf.tsx).
+   Mobile first: a scroll-snap row of covers. Wide screens with a hover pointer and motion
+   allowed get books standing spine-out that turn to show the cover on hover or keyboard
+   focus. Touch-only screens and reduced motion keep the flat covers. */
+@layer components {
+  .shelf {
+    display: flex;
+    gap: 1rem;
+    margin: 0;
+    padding: 0.5rem 0.25rem 1.25rem;
+    list-style: none;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+  }
+
+  .shelf-slot {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+
+  .book {
+    display: block;
+    height: 100%;
+    border-radius: 0.5rem;
+    color: var(--book-ink);
+    text-decoration: none;
+  }
+
+  .book:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 4px;
+  }
+
+  .book-body {
+    display: block;
+    position: relative;
+    height: 100%;
+  }
+
+  .book-spine {
+    display: none;
+  }
+
+  .book-cover {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    width: min(70vw, 15rem);
+    height: 100%;
+    min-height: 13rem;
+    padding: 1.25rem 1rem 1rem 1.5rem;
+    border-radius: 0.25rem 0.5rem 0.5rem 0.25rem;
+    background: var(--book-cover);
+    color: var(--book-ink);
+    /* Darker hinge strip on the left edge, and a soft drop shadow. */
+    box-shadow:
+      inset 0.5rem 0 0 rgb(0 0 0 / 0.18),
+      0 0.375rem 0.875rem rgb(0 0 0 / 0.25);
+  }
+
+  .book-icon {
+    margin-bottom: 0.5rem;
+    font-size: 2.25rem;
+    line-height: 1;
+  }
+
+  .book-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .book-title-en {
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+
+  .book-count {
+    align-self: flex-start;
+    margin-top: auto;
+    padding: 0.125rem 0.625rem;
+    border: 1px solid color-mix(in srgb, var(--book-ink) 60%, transparent);
+    border-radius: 999px;
+    font-size: 0.8125rem;
+  }
+
+  @media (min-width: 640px) {
+    .shelf {
+      flex-wrap: wrap;
+      justify-content: center;
+      overflow-x: visible;
+      scroll-snap-type: none;
+    }
+
+    .book-cover {
+      width: 11rem;
+      min-height: 15rem;
+    }
+  }
+
+  @media (min-width: 640px) and (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .shelf {
+      --spine-w: 3.5rem;
+      --cover-w: 11rem;
+      --turn: 450ms cubic-bezier(0.2, 0.7, 0.2, 1);
+      flex-wrap: nowrap;
+      align-items: flex-end;
+      gap: 0.375rem;
+      min-height: 19rem;
+      padding: 2.5rem 1.5rem 0;
+      /* The plank the books stand on, with its darker front edge. */
+      border-bottom: 0.875rem solid var(--shelf);
+      box-shadow: 0 0.375rem 0 var(--shelf-edge);
+    }
+
+    /* Slightly uneven heights, like a real shelf. */
+    .shelf-slot {
+      --book-h: 15rem;
+      width: var(--spine-w);
+      height: var(--book-h);
+      transition: width var(--turn);
+    }
+    .shelf-slot:nth-child(6n + 2) {
+      --book-h: 14.25rem;
+    }
+    .shelf-slot:nth-child(6n + 3) {
+      --book-h: 15.75rem;
+    }
+    .shelf-slot:nth-child(6n + 4) {
+      --book-h: 14.5rem;
+    }
+    .shelf-slot:nth-child(6n + 5) {
+      --book-h: 15.25rem;
+    }
+    .shelf-slot:nth-child(6n) {
+      --book-h: 14rem;
+    }
+
+    .book {
+      perspective: 1000px;
+      transition: transform var(--turn);
+    }
+
+    .book-body {
+      width: var(--spine-w);
+      transform-origin: 100% 50%;
+      transform-style: preserve-3d;
+      transition: transform var(--turn);
+    }
+
+    .book-spine {
+      display: flex;
+      position: absolute;
+      inset: 0;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 0 0.75rem;
+      border-radius: 0.1875rem;
+      background-color: var(--book-spine);
+      /* Two thin bands near the top, stamped in the ink color. */
+      background-image: linear-gradient(
+        to bottom,
+        transparent 0.5rem,
+        color-mix(in srgb, var(--book-ink) 45%, transparent) 0.5rem 0.625rem,
+        transparent 0.625rem 0.8125rem,
+        color-mix(in srgb, var(--book-ink) 45%, transparent) 0.8125rem 0.875rem,
+        transparent 0.875rem
+      );
+      color: var(--book-ink);
+      box-shadow:
+        inset -0.25rem 0 0 rgb(0 0 0 / 0.2),
+        inset 0.1875rem 0 0 rgb(255 255 255 / 0.08);
+      backface-visibility: hidden;
+    }
+
+    .book-spine-title {
+      writing-mode: vertical-rl;
+      font-size: 1.0625rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .book-spine-icon {
+      font-size: 1.25rem;
+      line-height: 1;
+    }
+
+    /* The cover hangs off the spine's right edge, turned 90deg away from the viewer. */
+    .book-cover {
+      position: absolute;
+      top: 0;
+      left: var(--spine-w);
+      width: var(--cover-w);
+      min-height: 0;
+      transform: rotateY(90deg);
+      transform-origin: 0 50%;
+      backface-visibility: hidden;
+    }
+
+    .book-title {
+      font-size: 1.125rem;
+    }
+
+    .shelf-slot:hover,
+    .shelf-slot:has(.book:focus-visible) {
+      width: var(--cover-w);
+    }
+
+    .shelf-slot:hover .book,
+    .book:focus-visible {
+      transform: translateY(-0.75rem);
+    }
+
+    /* Turn the book so the cover faces front, then slide it left into the widened slot. */
+    .shelf-slot:hover .book-body,
+    .book:focus-visible .book-body {
+      transform: translateX(calc(-1 * var(--spine-w))) rotateY(-90deg);
+    }
+  }
 }

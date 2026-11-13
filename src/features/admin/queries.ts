@@ -33,6 +33,7 @@ export async function getAdminStory(id: string) {
       summaryBn: true,
       summaryEn: true,
       genre: true,
+      category: true,
       level: true,
       status: true,
       chapters: {

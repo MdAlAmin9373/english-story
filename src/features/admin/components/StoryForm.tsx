@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import type { Genre, PublishStatus } from "@prisma/client";
+import type { Genre, PublishStatus, StoryCategory } from "@prisma/client";
+import { CATEGORIES, DEFAULT_CATEGORY } from "@/features/stories/categories";
 import { genreLabel, levelLabel } from "@/features/stories/labels";
 import type { AdminFormState } from "../actions";
 import { GENRES, STATUSES } from "../constants";
@@ -16,6 +17,7 @@ export type StoryDefaults = {
   summaryBn: string;
   summaryEn: string;
   genre: Genre;
+  category: StoryCategory;
   level: number;
   status: PublishStatus;
 };
@@ -27,6 +29,7 @@ const empty: StoryDefaults = {
   summaryBn: "",
   summaryEn: "",
   genre: "FOLKTALE",
+  category: DEFAULT_CATEGORY,
   level: 1,
   status: "DRAFT",
 };
@@ -121,6 +124,28 @@ export function StoryForm({
           />
         </Field>
       </div>
+
+      <Field
+        label="বিভাগ (হোম পেজের তাক)"
+        htmlFor="category"
+        errors={errors.category}
+        hint="গল্পটি কোন বইয়ের তাকে দেখাবে"
+      >
+        <select
+          id="category"
+          name="category"
+          required
+          defaultValue={value("category")}
+          aria-invalid={invalid("category")}
+          className={inputClass}
+        >
+          {CATEGORIES.map((category) => (
+            <option key={category.value} value={category.value}>
+              {category.nameBn} ({category.nameEn})
+            </option>
+          ))}
+        </select>
+      </Field>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Field label="ধরন" htmlFor="genre" errors={errors.genre}>
