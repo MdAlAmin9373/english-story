@@ -154,11 +154,24 @@ body {
    allowed get books standing spine-out that turn to show the cover on hover or keyboard
    focus. Touch-only screens and reduced motion keep the flat covers; on the flat layout,
    when motion is allowed, covers rise in once (staggered by --slot-index) and shrink a
-   little while pressed. */
+   little while pressed. On a plain click/tap, BookLink sets data-opening="true" and the
+   cover swings open on its left-edge hinge, revealing the inner page (.book-page), then
+   the category page opens. Transforms never collide: entrance on .shelf-slot, press and
+   hover lift on .book, 3D turn on .book-body, swing on .book-cover. */
 @keyframes shelf-rise {
   from {
     opacity: 0;
     transform: translateY(1rem) scale(0.9);
+  }
+}
+
+/* --cover-rest is the cover's resting angle: 0deg flat, 90deg on the 3D shelf. */
+@keyframes book-cover-open {
+  from {
+    transform: rotateY(var(--cover-rest, 0deg));
+  }
+  to {
+    transform: rotateY(calc(var(--cover-rest, 0deg) - 100deg));
   }
 }
 
@@ -199,6 +212,11 @@ body {
   }
 
   .book-spine {
+    display: none;
+  }
+
+  /* Only shown where the cover can swing (motion allowed); see the queries below. */
+  .book-page {
     display: none;
   }
 
@@ -265,8 +283,26 @@ body {
   @media (prefers-reduced-motion: no-preference) and (max-width: 639.98px),
     (prefers-reduced-motion: no-preference) and (hover: none) {
     .shelf-slot {
-      animation: shelf-rise 750ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
-      animation-delay: calc(150ms + var(--slot-index, 0) * 140ms);
+      animation: shelf-rise 950ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+      animation-delay: calc(200ms + var(--slot-index, 0) * 180ms);
+    }
+
+    /* A far perspective keeps the swinging cover's projection inside the shelf's padding,
+       so the scroll row never grows a scrollbar mid-swing. */
+    .book-body {
+      perspective: 2000px;
+    }
+
+    .book-cover {
+      position: relative;
+      z-index: 1;
+    }
+
+    .book-page {
+      display: block;
+      position: absolute;
+      inset: 0;
+      border-radius: 0.25rem 0.5rem 0.5rem 0.25rem;
     }
 
     .book {
@@ -382,20 +418,69 @@ body {
       font-size: 1.125rem;
     }
 
+    .book-cover {
+      --cover-rest: 90deg;
+    }
+
+    /* Same place and angle as the cover, a hair behind it in 3D. */
+    .book-page {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: var(--spine-w);
+      width: var(--cover-w);
+      height: 100%;
+      border-radius: 0 0.25rem 0.25rem 0;
+      transform: rotateY(90deg) translateZ(-1px);
+      transform-origin: 0 50%;
+      backface-visibility: hidden;
+    }
+
+    /* While opening, hold the hovered/focused pose so leaving with the mouse mid-swing
+       does not turn the book back to its spine. */
     .shelf-slot:hover,
-    .shelf-slot:has(.book:focus-visible) {
+    .shelf-slot:has(.book:focus-visible),
+    .shelf-slot:has(.book[data-opening="true"]) {
       width: var(--cover-w);
     }
 
     .shelf-slot:hover .book,
-    .book:focus-visible {
+    .book:focus-visible,
+    .book[data-opening="true"] {
       transform: translateY(-0.75rem);
     }
 
     /* Turn the book so the cover faces front, then slide it left into the widened slot. */
     .shelf-slot:hover .book-body,
-    .book:focus-visible .book-body {
+    .book:focus-visible .book-body,
+    .book[data-opening="true"] .book-body {
       transform: translateX(calc(-1 * var(--spine-w))) rotateY(-90deg);
+    }
+  }
+
+  /* The cover swing, for both layouts (flat and 3D together cover every motion-allowed
+     screen). Reduced motion: no page, no swing, BookLink navigates normally. */
+  @media (prefers-reduced-motion: no-preference) {
+    .book-cover {
+      transform-origin: 0 50%;
+    }
+
+    /* Paper-coloured page with faint ruled lines and a shaded gutter at the hinge. */
+    .book-page {
+      background-color: var(--surface-raised);
+      background-image:
+        linear-gradient(to right, rgb(0 0 0 / 0.18), transparent 1rem),
+        repeating-linear-gradient(
+          to bottom,
+          transparent 0 1.375rem,
+          color-mix(in srgb, var(--text) 14%, transparent) 1.375rem 1.4375rem
+        );
+      box-shadow: 0 0.375rem 0.875rem rgb(0 0 0 / 0.25);
+    }
+
+    .book[data-opening="true"] .book-cover {
+      animation: book-cover-open 320ms ease-in-out forwards;
+      backface-visibility: hidden;
     }
   }
 }

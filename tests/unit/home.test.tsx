@@ -6,6 +6,12 @@ afterEach(() => {
 });
 
 vi.mock("server-only", () => ({}));
+// BookLink needs an app router; keep the rest of next/navigation real.
+vi.mock("next/navigation", async () => ({
+  ...(await vi.importActual<typeof import("next/navigation")>("next/navigation")),
+  useRouter: () => ({ push: vi.fn(), prefetch: vi.fn() }),
+  usePathname: () => "/",
+}));
 vi.mock("@/features/stories/queries", () => ({
   getPublishedCategoryCounts: vi.fn(() => new Promise(() => {})), // stays on the fallback
 }));
