@@ -13,14 +13,16 @@ import {
 export function Bookshelf({ counts }: { counts: CategoryCounts }) {
   return (
     <ul className="shelf" aria-label="গল্পের বিভাগ">
-      {CATEGORIES.map((category) => {
+      {CATEGORIES.map((category, index) => {
         const style = {
           "--book-cover": category.cover,
           "--book-spine": category.spine,
           "--book-ink": category.ink,
         } as CSSProperties;
+        // Drives the staggered entrance on the flat (touch / narrow) layout.
+        const slotStyle = { "--slot-index": index } as CSSProperties;
         return (
-          <li key={category.value} className="shelf-slot">
+          <li key={category.value} className="shelf-slot" style={slotStyle}>
             <Link href={categoryHref(category)} className="book" style={style}>
               <span className="book-body">
                 <span className="book-spine" aria-hidden="true">

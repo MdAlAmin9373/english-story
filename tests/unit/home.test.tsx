@@ -47,6 +47,15 @@ describe("Bookshelf", () => {
     );
   });
 
+  test("each slot carries its stagger index for the mobile entrance animation", () => {
+    render(<Bookshelf counts={counts} />);
+    const shelf = screen.getByRole("list", { name: "গল্পের বিভাগ" });
+    const slots = within(shelf).getAllByRole("listitem");
+    expect(slots.map((li) => li.style.getPropertyValue("--slot-index"))).toEqual(
+      CATEGORIES.map((_, i) => String(i)),
+    );
+  });
+
   test("each link has readable text: Bengali name, English name and story count", () => {
     render(<Bookshelf counts={counts} />);
     expect(
