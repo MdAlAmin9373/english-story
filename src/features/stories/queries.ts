@@ -27,7 +27,7 @@ export async function getPublishedStories() {
   cacheLife("hours");
   return db.story.findMany({
     where: { status: "PUBLISHED" },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
     select: storyCardSelect,
   });
 }
@@ -38,7 +38,7 @@ export async function getPublishedStoriesByCategory(category: StoryCategory) {
   cacheLife("hours");
   return db.story.findMany({
     where: { status: "PUBLISHED", category },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
     select: storyCardSelect,
   });
 }

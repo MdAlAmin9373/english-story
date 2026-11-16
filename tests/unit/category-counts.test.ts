@@ -67,7 +67,7 @@ describe("published story lists", () => {
     expect(db.story.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { status: "PUBLISHED", category: "FABLES" },
-        orderBy: { createdAt: "desc" },
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
       }),
     );
     expect(cacheTag).toHaveBeenCalledWith(STORIES_TAG);
