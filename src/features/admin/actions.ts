@@ -281,6 +281,27 @@ export async function deleteChapter(
   refresh();
 }
 
+// Deletes a story. Chapters and everything under them cascade (see prisma/schema.prisma).
+// Bound to (storyId) in the page, so the form action receives only the FormData.
+export async function deleteStory(storyId: string, _formData: FormData): Promise<void> {
+  await requireAdmin(`/admin/stories/${storyId}`);
+  const id = idSchema.safeParse(storyId);
+  if (!id.success) return;
+
+  try {
+    const { count } = await db.story.deleteMany({ where: { id: id.data } });
+    if (count === 0) return;
+  } catch (err) {
+    if (prismaCode(err) === "P2025") return;
+    console.error("[admin] deleteStory failed:", (err as Error).message);
+    return;
+  }
+
+  updateTag(STORIES_TAG);
+  refresh();
+  redirect("/admin");
+}
+
 export async function moveChapter(formData: FormData): Promise<void> {
   await requireAdmin();
   const parsed = moveSchema.safeParse(formValues(formData));

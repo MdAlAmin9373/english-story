@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { deleteChapter, moveChapter, setChapterStatus, updateStory } from "@/features/admin/actions";
+import {
+  deleteChapter,
+  deleteStory,
+  moveChapter,
+  setChapterStatus,
+  updateStory,
+} from "@/features/admin/actions";
 import { ConfirmSubmitButton } from "@/features/admin/components/ConfirmSubmitButton";
 import { primaryButtonClass, secondaryButtonClass } from "@/features/admin/components/fields";
 import { MoveButtons } from "@/features/admin/components/MoveButtons";
@@ -44,6 +50,20 @@ async function EditStory({ params }: { params: Promise<{ storyId: string }> }) {
           story={story}
           submitLabel="সংরক্ষণ করুন"
         />
+      </section>
+
+      <section className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-danger-strong bg-surface p-4">
+        <p className="text-sm text-ink-muted">
+          গল্পটি মুছে ফেললে এর সব অধ্যায় ও তাদের বিষয়বস্তু স্থায়ীভাবে মুছে যাবে।
+        </p>
+        <form action={deleteStory.bind(null, story.id)}>
+          <ConfirmSubmitButton
+            danger
+            message={`"${story.titleBn}" গল্পটি মুছে ফেললে এর সব অধ্যায়, বাক্য, শব্দ, প্রশ্ন ও নোটও মুছে যাবে। এটি ফেরানো যাবে না। নিশ্চিত?`}
+          >
+            গল্প মুছুন
+          </ConfirmSubmitButton>
+        </form>
       </section>
 
       <section className="flex flex-col gap-3">
