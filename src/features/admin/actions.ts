@@ -254,31 +254,31 @@ export async function setChapterStatus(formData: FormData): Promise<void> {
 
 // Deletes a chapter. Sentences, words, questions, order tasks and notes cascade
 // (see prisma/schema.prisma). Scoped to the story in the URL, so a mismatched
-// pair is treated as not found.
+// pair is treated as not found. Bound to (storyId, chapterId) in the page, so the
+// form action receives only the FormData.
 export async function deleteChapter(
   storyId: string,
   chapterId: string,
-  _prev: AdminFormState,
   _formData: FormData,
-): Promise<AdminFormState> {
+): Promise<void> {
   await requireAdmin(`/admin/stories/${storyId}`);
   const story = idSchema.safeParse(storyId);
   const chapter = idSchema.safeParse(chapterId);
-  if (!story.success || !chapter.success) return { error: MSG.notFound };
+  if (!story.success || !chapter.success) return;
 
   try {
     const { count } = await db.chapter.deleteMany({
       where: { id: chapter.data, storyId: story.data },
     });
-    if (count === 0) return { error: MSG.notFound };
+    if (count === 0) return;
   } catch (err) {
-    if (prismaCode(err) === "P2025") return { error: MSG.notFound };
+    if (prismaCode(err) === "P2025") return;
     console.error("[admin] deleteChapter failed:", (err as Error).message);
-    return { error: MSG.failed };
+    return;
   }
+
   updateTag(STORIES_TAG);
   refresh();
-  return { saved: true };
 }
 
 export async function moveChapter(formData: FormData): Promise<void> {
