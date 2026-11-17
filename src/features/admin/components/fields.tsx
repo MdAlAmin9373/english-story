@@ -10,6 +10,9 @@ export const primaryButtonClass =
 export const secondaryButtonClass =
   "rounded-lg border border-line-strong px-3 py-1.5 text-sm text-ink hover:border-accent disabled:opacity-60";
 
+export const dangerButtonClass =
+  "rounded-lg border border-danger-strong px-3 py-1.5 text-sm text-danger hover:bg-danger-strong/10 disabled:opacity-60";
+
 export function Field({
   label,
   htmlFor,

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { moveChapter, setChapterStatus, updateStory } from "@/features/admin/actions";
+import { deleteChapter, moveChapter, setChapterStatus, updateStory } from "@/features/admin/actions";
 import { ConfirmSubmitButton } from "@/features/admin/components/ConfirmSubmitButton";
 import { primaryButtonClass, secondaryButtonClass } from "@/features/admin/components/fields";
 import { MoveButtons } from "@/features/admin/components/MoveButtons";
@@ -105,6 +105,14 @@ async function EditStory({ params }: { params: Promise<{ storyId: string }> }) {
                         }
                       >
                         {published ? "খসড়া করুন" : "প্রকাশ করুন"}
+                      </ConfirmSubmitButton>
+                    </form>
+                    <form action={deleteChapter.bind(null, story.id, chapter.id)}>
+                      <ConfirmSubmitButton
+                        danger
+                        message={`"${chapter.titleBn}" মুছে ফেললে এর সব বাক্য, শব্দ, প্রশ্ন ও নোটও মুছে যাবে। নিশ্চিত?`}
+                      >
+                        মুছুন
                       </ConfirmSubmitButton>
                     </form>
                   </div>
