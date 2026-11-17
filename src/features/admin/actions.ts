@@ -302,6 +302,119 @@ export async function deleteStory(storyId: string, _formData: FormData): Promise
   redirect("/admin");
 }
 
+// Deletes one sentence. Bound to (sentenceId) in the page.
+export async function deleteSentence(sentenceId: string, _formData: FormData): Promise<void> {
+  await requireAdmin();
+  const id = idSchema.safeParse(sentenceId);
+  if (!id.success) return;
+
+  try {
+    const { count } = await db.chapterSentence.deleteMany({ where: { id: id.data } });
+    if (count === 0) return;
+  } catch (err) {
+    if (prismaCode(err) === "P2025") return;
+    console.error("[admin] deleteSentence failed:", (err as Error).message);
+    return;
+  }
+
+  updateTag(STORIES_TAG);
+  refresh();
+}
+
+// Deletes one vocabulary word. WordForm rows are keyed by the word string (no FK),
+// so they are removed only when no other VocabularyWord still uses that word.
+export async function deleteWord(wordId: string, _formData: FormData): Promise<void> {
+  await requireAdmin();
+  const id = idSchema.safeParse(wordId);
+  if (!id.success) return;
+
+  let word: string;
+  try {
+    const row = await db.vocabularyWord.findUnique({
+      where: { id: id.data },
+      select: { word: true },
+    });
+    if (!row) return;
+    word = row.word;
+    await db.vocabularyWord.delete({ where: { id: id.data } });
+  } catch (err) {
+    if (prismaCode(err) === "P2025") return;
+    console.error("[admin] deleteWord failed:", (err as Error).message);
+    return;
+  }
+
+  // Only drop the shared tense forms if no other chapter still uses this word.
+  try {
+    const stillUsed = await db.vocabularyWord.findFirst({
+      where: { word },
+      select: { id: true },
+    });
+    if (!stillUsed) await db.wordForm.deleteMany({ where: { word } });
+  } catch (err) {
+    console.error("[admin] deleteWord (WordForm cleanup) failed:", (err as Error).message);
+  }
+
+  updateTag(STORIES_TAG);
+  refresh();
+}
+
+// Deletes one quiz question. Attempts and hint uses cascade.
+export async function deleteQuestion(questionId: string, _formData: FormData): Promise<void> {
+  await requireAdmin();
+  const id = idSchema.safeParse(questionId);
+  if (!id.success) return;
+
+  try {
+    const { count } = await db.quizQuestion.deleteMany({ where: { id: id.data } });
+    if (count === 0) return;
+  } catch (err) {
+    if (prismaCode(err) === "P2025") return;
+    console.error("[admin] deleteQuestion failed:", (err as Error).message);
+    return;
+  }
+
+  updateTag(STORIES_TAG);
+  refresh();
+}
+
+// Deletes one sentence-ordering task. Attempts and hint uses cascade.
+export async function deleteOrderTask(taskId: string, _formData: FormData): Promise<void> {
+  await requireAdmin();
+  const id = idSchema.safeParse(taskId);
+  if (!id.success) return;
+
+  try {
+    const { count } = await db.sentenceOrderTask.deleteMany({ where: { id: id.data } });
+    if (count === 0) return;
+  } catch (err) {
+    if (prismaCode(err) === "P2025") return;
+    console.error("[admin] deleteOrderTask failed:", (err as Error).message);
+    return;
+  }
+
+  updateTag(STORIES_TAG);
+  refresh();
+}
+
+// Deletes one pronunciation / grammar note.
+export async function deleteNote(noteId: string, _formData: FormData): Promise<void> {
+  await requireAdmin();
+  const id = idSchema.safeParse(noteId);
+  if (!id.success) return;
+
+  try {
+    const { count } = await db.chapterNote.deleteMany({ where: { id: id.data } });
+    if (count === 0) return;
+  } catch (err) {
+    if (prismaCode(err) === "P2025") return;
+    console.error("[admin] deleteNote failed:", (err as Error).message);
+    return;
+  }
+
+  updateTag(STORIES_TAG);
+  refresh();
+}
+
 export async function moveChapter(formData: FormData): Promise<void> {
   await requireAdmin();
   const parsed = moveSchema.safeParse(formValues(formData));

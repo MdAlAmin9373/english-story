@@ -7,6 +7,11 @@ import {
   createQuestion,
   createSentence,
   createWord,
+  deleteNote,
+  deleteOrderTask,
+  deleteQuestion,
+  deleteSentence,
+  deleteWord,
   moveChapterItem,
   saveWordForms,
   updateChapter,
@@ -17,6 +22,7 @@ import {
   updateWord,
 } from "@/features/admin/actions";
 import { ChapterForm } from "@/features/admin/components/ChapterForm";
+import { ConfirmSubmitButton } from "@/features/admin/components/ConfirmSubmitButton";
 import { secondaryButtonClass } from "@/features/admin/components/fields";
 import { MoveButtons } from "@/features/admin/components/MoveButtons";
 import { NoteForm } from "@/features/admin/components/NoteForm";
@@ -146,6 +152,12 @@ async function EditChapter({
                 </span>
               </>
             }
+            extra={
+              <DeleteItemButton
+                action={deleteSentence.bind(null, sentence.id)}
+                message="এই বাক্যটি মুছে ফেলবেন? নিশ্চিত?"
+              />
+            }
           >
             <SentenceForm
               action={updateSentence.bind(null, sentence.id)}
@@ -191,18 +203,24 @@ async function EditChapter({
               </>
             }
             extra={
-              <details>
-                <summary className="cursor-pointer text-sm text-accent">
-                  কালের রূপ (৯টি ঘর)
-                </summary>
-                <div className="pt-3">
-                  <TenseGridForm
-                    action={saveWordForms.bind(null, word.id)}
-                    word={word.word}
-                    forms={chapter.formsByWord[word.word] ?? []}
-                  />
-                </div>
-              </details>
+              <>
+                <details>
+                  <summary className="cursor-pointer text-sm text-accent">
+                    কালের রূপ (৯টি ঘর)
+                  </summary>
+                  <div className="pt-3">
+                    <TenseGridForm
+                      action={saveWordForms.bind(null, word.id)}
+                      word={word.word}
+                      forms={chapter.formsByWord[word.word] ?? []}
+                    />
+                  </div>
+                </details>
+                <DeleteItemButton
+                  action={deleteWord.bind(null, word.id)}
+                  message={`"${word.word}" শব্দটি মুছে ফেলবেন? অন্য কোনো অধ্যায়ে শব্দটি না থাকলে এর কালের রূপও মুছে যাবে। নিশ্চিত?`}
+                />
+              </>
             }
           >
             <VocabWordForm
@@ -252,6 +270,12 @@ async function EditChapter({
                 </span>
                 {question.hint && <HintTag />}
               </>
+            }
+            extra={
+              <DeleteItemButton
+                action={deleteQuestion.bind(null, question.id)}
+                message="এই প্রশ্নটি মুছে ফেললে শিক্ষার্থীদের উত্তর ও ইঙ্গিতের রেকর্ডও মুছে যাবে। নিশ্চিত?"
+              />
             }
           >
             <QuestionForm
@@ -311,6 +335,12 @@ async function EditChapter({
                 {task.hint && <HintTag />}
               </>
             }
+            extra={
+              <DeleteItemButton
+                action={deleteOrderTask.bind(null, task.id)}
+                message="এই বাক্য সাজানোর কাজটি মুছে ফেললে শিক্ষার্থীদের চেষ্টা ও ইঙ্গিতের রেকর্ডও মুছে যাবে। নিশ্চিত?"
+              />
+            }
           >
             <OrderTaskForm
               action={updateOrderTask.bind(null, task.id)}
@@ -346,6 +376,12 @@ async function EditChapter({
                 </span>
               </>
             }
+            extra={
+              <DeleteItemButton
+                action={deleteNote.bind(null, note.id)}
+                message="এই নোটটি মুছে ফেলবেন? নিশ্চিত?"
+              />
+            }
           >
             <NoteForm
               action={updateNote.bind(null, note.id)}
@@ -356,6 +392,23 @@ async function EditChapter({
         ))}
       </EditorSection>
     </>
+  );
+}
+
+// Delete button for one row inside an ItemCard. Bound to the row's id in the page.
+function DeleteItemButton({
+  action,
+  message,
+}: {
+  action: (formData: FormData) => Promise<void>;
+  message: string;
+}) {
+  return (
+    <form action={action}>
+      <ConfirmSubmitButton danger message={message}>
+        মুছুন
+      </ConfirmSubmitButton>
+    </form>
   );
 }
 
