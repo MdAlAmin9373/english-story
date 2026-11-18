@@ -22,6 +22,7 @@ import {
   wordSchema,
 } from "./schemas";
 import { nextOrder, swapTarget } from "./validate";
+import { tenseKinds } from "@/features/vocab/tense-table";
 
 // Every action calls requireAdmin() first: the admin UI is never trusted.
 // Nothing is ever deleted; stories are hidden by setting status to DRAFT.
@@ -60,6 +61,20 @@ function invalid(error: z.ZodError, values: Record<string, string>): AdminFormSt
 
 function prismaCode(err: unknown): string | null {
   return err instanceof Prisma.PrismaClientKnownRequestError ? err.code : null;
+}
+
+// Logs the full Prisma error (code, meta, message) so Vercel logs show which
+// field/value was rejected, not just the generic "Invalid prisma…" line.
+function logPrismaError(where: string, err: unknown): void {
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    console.error(`[admin] ${where} failed:`, {
+      code: err.code,
+      meta: err.meta,
+      message: err.message,
+    });
+    return;
+  }
+  console.error(`[admin] ${where} failed:`, err);
 }
 
 type Tx = Prisma.TransactionClient;
@@ -456,7 +471,7 @@ async function saveItem<T>(
       case "P2025":
         return { error: MSG.notFound, values };
     }
-    console.error("[admin] saveItem failed:", (err as Error).message);
+    logPrismaError("saveItem", err);
     return { error: MSG.failed, values };
   }
   refresh();
@@ -603,15 +618,34 @@ export async function saveWordForms(
     });
     if (!row) return { error: MSG.notFound };
 
-    await db.$transaction(
-      cells.map(({ time, kind, form, exampleEn }) =>
-        db.wordForm.upsert({
-          where: { word_time_kind: { word: row.word, time, kind } },
-          create: { word: row.word, time, kind, form, exampleEn },
-          update: { form, exampleEn },
-        }),
-      ),
-    );
+    // Guard against a stale Prisma client (or a hand-crafted POST) sending a kind
+    // the generated client does not know: fail with a clear message instead of an
+    // opaque "Invalid prisma.wordForm.upsert() invocation".
+    const knownKinds = new Set<string>(tenseKinds);
+    const unknown = cells.find((c) => !knownKinds.has(c.kind));
+    if (unknown) {
+      console.error("[admin] saveWordForms: unknown TenseKind", {
+        word: row.word,
+        kind: unknown.kind,
+        time: unknown.time,
+      });
+      return { error: MSG.failed };
+    }
+
+    try {
+      await db.$transaction(
+        cells.map(({ time, kind, form, exampleEn }) =>
+          db.wordForm.upsert({
+            where: { word_time_kind: { word: row.word, time, kind } },
+            create: { word: row.word, time, kind, form, exampleEn },
+            update: { form, exampleEn },
+          }),
+        ),
+      );
+    } catch (err) {
+      logPrismaError("saveWordForms", err);
+      throw err;
+    }
   });
 }
 
