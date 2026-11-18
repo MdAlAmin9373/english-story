@@ -43,7 +43,7 @@ export function TenseGridForm({
 
       {/* Wide table: scrolls sideways on small phones instead of squeezing the inputs. */}
       <div className="overflow-x-auto rounded-lg border border-line">
-        <table className="w-full min-w-[640px] border-collapse text-left">
+        <table className="w-full min-w-[820px] border-collapse text-left">
           <thead>
             <tr>
               <th scope="col" className="w-28 p-2 text-sm text-ink-muted">

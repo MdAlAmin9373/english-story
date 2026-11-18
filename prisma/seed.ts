@@ -114,8 +114,11 @@ const chapterThreeWords: SeedWord[] = [
 ];
 
 type FormPair = [form: string, exampleEn: string];
-// Per time: [simple, continuous, perfect].
-type SeedTenses = Record<"PRESENT" | "PAST" | "FUTURE", [FormPair, FormPair, FormPair]>;
+// Per time: [simple, continuous, perfect, perfect continuous].
+type SeedTenses = Record<
+  "PRESENT" | "PAST" | "FUTURE",
+  [FormPair, FormPair, FormPair, FormPair]
+>;
 
 const tenseForms: Record<string, SeedTenses> = {
   fly: {
@@ -123,16 +126,19 @@ const tenseForms: Record<string, SeedTenses> = {
       ["flies", "Ratul flies his kite every Friday."],
       ["is flying", "Ratul is flying his kite right now."],
       ["has flown", "Ratul has flown his kite many times."],
+      ["has been flying", "Ratul has been flying his kite for an hour."],
     ],
     PAST: [
       ["flew", "Ratul flew his kite yesterday."],
       ["was flying", "Ratul was flying his kite when the string broke."],
       ["had flown", "Ratul had flown the kite before Mitu came."],
+      ["had been flying", "Ratul had been flying his kite for an hour before it rained."],
     ],
     FUTURE: [
       ["will fly", "Ratul will fly his kite tomorrow."],
       ["will be flying", "Ratul will be flying his kite at noon."],
       ["will have flown", "Ratul will have flown his kite by evening."],
+      ["will have been flying", "Ratul will have been flying his kite for an hour by noon."],
     ],
   },
   make: {
@@ -140,16 +146,19 @@ const tenseForms: Record<string, SeedTenses> = {
       ["makes", "Mitu makes tea every morning."],
       ["is making", "Mitu is making a paper boat now."],
       ["has made", "Mitu has made a new kite."],
+      ["has been making", "Mitu has been making kites all morning."],
     ],
     PAST: [
       ["made", "Mitu made a card for her friend yesterday."],
       ["was making", "Mitu was making lunch when it started to rain."],
       ["had made", "Mitu had made her bed before breakfast."],
+      ["had been making", "Mitu had been making lunch for an hour when it rained."],
     ],
     FUTURE: [
       ["will make", "Mitu will make a cake tomorrow."],
       ["will be making", "Mitu will be making toys all afternoon."],
       ["will have made", "Mitu will have made ten kites by Sunday."],
+      ["will have been making", "Mitu will have been making kites for two hours by noon."],
     ],
   },
   take: {
@@ -157,16 +166,19 @@ const tenseForms: Record<string, SeedTenses> = {
       ["takes", "Ratul takes the bus to school."],
       ["is taking", "Ratul is taking his dog for a walk."],
       ["has taken", "Ratul has taken his books home."],
+      ["has been taking", "Ratul has been taking the bus for years."],
     ],
     PAST: [
       ["took", "Ratul took a photo of the river."],
       ["was taking", "Ratul was taking a nap when Mitu called."],
       ["had taken", "Ratul had taken his umbrella before the rain started."],
+      ["had been taking", "Ratul had been taking photos for an hour before sunset."],
     ],
     FUTURE: [
       ["will take", "Ratul will take the boat across the river."],
       ["will be taking", "Ratul will be taking an exam at ten."],
       ["will have taken", "Ratul will have taken his medicine by night."],
+      ["will have been taking", "Ratul will have been taking lessons for a year by June."],
     ],
   },
   break: {
@@ -174,16 +186,19 @@ const tenseForms: Record<string, SeedTenses> = {
       ["breaks", "The string breaks."],
       ["is breaking", "The string is breaking."],
       ["has broken", "The string has broken."],
+      ["has been breaking", "The string has been breaking all day."],
     ],
     PAST: [
       ["broke", "The string broke."],
       ["was breaking", "The string was breaking."],
       ["had broken", "The string had broken."],
+      ["had been breaking", "The string had been breaking for a while."],
     ],
     FUTURE: [
       ["will break", "The string will break."],
       ["will be breaking", "The string will be breaking."],
       ["will have broken", "The string will have broken."],
+      ["will have been breaking", "The string will have been breaking for an hour by then."],
     ],
   },
   cross: {
@@ -191,16 +206,19 @@ const tenseForms: Record<string, SeedTenses> = {
       ["crosses", "He crosses the bridge."],
       ["is crossing", "He is crossing the bridge."],
       ["has crossed", "He has crossed the bridge."],
+      ["has been crossing", "He has been crossing the bridge every day."],
     ],
     PAST: [
       ["crossed", "He crossed the bridge."],
       ["was crossing", "He was crossing the bridge."],
       ["had crossed", "He had crossed the bridge."],
+      ["had been crossing", "He had been crossing the bridge for ten minutes."],
     ],
     FUTURE: [
       ["will cross", "He will cross the bridge."],
       ["will be crossing", "He will be crossing the bridge."],
       ["will have crossed", "He will have crossed the bridge."],
+      ["will have been crossing", "He will have been crossing the bridge for an hour by noon."],
     ],
   },
   say: {
@@ -208,16 +226,19 @@ const tenseForms: Record<string, SeedTenses> = {
       ["says", "Mitu says hello."],
       ["is saying", "Mitu is saying hello."],
       ["has said", "Mitu has said hello."],
+      ["has been saying", "Mitu has been saying hello all morning."],
     ],
     PAST: [
       ["said", "Mitu said hello."],
       ["was saying", "Mitu was saying hello."],
       ["had said", "Mitu had said hello."],
+      ["had been saying", "Mitu had been saying hello for a minute."],
     ],
     FUTURE: [
       ["will say", "Mitu will say hello."],
       ["will be saying", "Mitu will be saying hello."],
       ["will have said", "Mitu will have said hello."],
+      ["will have been saying", "Mitu will have been saying hello for an hour by then."],
     ],
   },
   bring: {
@@ -225,21 +246,24 @@ const tenseForms: Record<string, SeedTenses> = {
       ["brings", "Mitu brings a pole."],
       ["is bringing", "Mitu is bringing a pole."],
       ["has brought", "Mitu has brought a pole."],
+      ["has been bringing", "Mitu has been bringing poles all week."],
     ],
     PAST: [
       ["brought", "Mitu brought a pole."],
       ["was bringing", "Mitu was bringing a pole."],
       ["had brought", "Mitu had brought a pole."],
+      ["had been bringing", "Mitu had been bringing poles for an hour."],
     ],
     FUTURE: [
       ["will bring", "Mitu will bring a pole."],
       ["will be bringing", "Mitu will be bringing a pole."],
       ["will have brought", "Mitu will have brought a pole."],
+      ["will have been bringing", "Mitu will have been bringing poles for an hour by noon."],
     ],
   },
 };
 
-const kinds = ["SIMPLE", "CONTINUOUS", "PERFECT"] as const;
+const kinds = ["SIMPLE", "CONTINUOUS", "PERFECT", "PERFECT_CONTINUOUS"] as const;
 
 type SeedQuestion = {
   type: "MULTIPLE_CHOICE" | "FILL_GAP";

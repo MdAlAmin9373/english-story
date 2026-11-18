@@ -2,7 +2,12 @@ import type { TenseKind, TenseTime } from "@prisma/client";
 
 // Rows and columns of the tense table, in display order (no perfect continuous).
 export const tenseTimes = ["PRESENT", "PAST", "FUTURE"] as const satisfies readonly TenseTime[];
-export const tenseKinds = ["SIMPLE", "CONTINUOUS", "PERFECT"] as const satisfies readonly TenseKind[];
+export const tenseKinds = [
+  "SIMPLE",
+  "CONTINUOUS",
+  "PERFECT",
+  "PERFECT_CONTINUOUS",
+] as const satisfies readonly TenseKind[];
 
 export const tenseTimeLabel: Record<TenseTime, { bn: string; en: string }> = {
   PRESENT: { bn: "বর্তমান", en: "Present" },
@@ -14,6 +19,7 @@ export const tenseKindLabel: Record<TenseKind, { bn: string; en: string }> = {
   SIMPLE: { bn: "সাধারণ", en: "Simple" },
   CONTINUOUS: { bn: "ঘটমান", en: "Continuous" },
   PERFECT: { bn: "পুরাঘটিত", en: "Perfect" },
+  PERFECT_CONTINUOUS: { bn: "পুরাঘটিত চলমান", en: "Perfect Continuous" },
 };
 
 export const labelSeparator = " · ";
