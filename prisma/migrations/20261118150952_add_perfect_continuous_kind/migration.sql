@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "TenseKind" ADD VALUE 'PERFECT_CONTINUOUS';

@@ -143,6 +143,7 @@ enum TenseKind {
   SIMPLE
   CONTINUOUS
   PERFECT
+  PERFECT_CONTINUOUS
 }
 
 enum TenseTime {
