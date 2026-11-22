@@ -16,6 +16,8 @@ const storyCardSelect = {
   titleBn: true,
   titleEn: true,
   summaryBn: true,
+  summaryEn: true,
+  category: true,
   genre: true,
   level: true,
   _count: { select: { chapters: { where: { status: "PUBLISHED" } } } },

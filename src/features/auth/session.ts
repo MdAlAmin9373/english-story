@@ -2,6 +2,7 @@ import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
+import { connection } from "next/server";
 import type { Role } from "@prisma/client";
 import { db } from "@/lib/db";
 import { scheduleCleanup } from "./cleanup";
@@ -44,6 +45,9 @@ export async function createSession(userId: string): Promise<void> {
 
 // Reads a cookie and the database: call it inside a <Suspense> boundary.
 export async function getCurrentUser(): Promise<CurrentUser | null> {
+  // Opt out of prerendering: the cookie read and the Date.now() expiry check below
+  // must run per request, not while Next.js builds the static shell.
+  await connection();
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
   if (!token) return null;
 

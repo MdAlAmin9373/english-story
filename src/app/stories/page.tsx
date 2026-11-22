@@ -11,7 +11,7 @@ export default function StoriesPage() {
         <h1 className="text-2xl font-bold text-ink">সব গল্প</h1>
         <p className="text-ink-muted">একটি গল্প বেছে নিন, বাংলা ও ইংরেজি পাশাপাশি পড়ুন।</p>
       </div>
-      {/* Reads the session cookie and the database, so it streams in behind Suspense. */}
+      {/* Cached database read (tagged "stories"), streamed in behind Suspense. */}
       <Suspense fallback={<p className="text-ink-muted">লোড হচ্ছে…</p>}>
         <PublishedStoryList
           empty={<p className="text-ink-muted">এখনো কোনো গল্প প্রকাশিত হয়নি।</p>}

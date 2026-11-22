@@ -114,7 +114,7 @@ export const questionSchema = z
     if (error) ctx.addIssue({ code: "custom", message: error });
   });
 
-// The 3x3 tense grid: 18 optional inputs in, the list of filled cells out.
+// The tense grid (3 times x 4 kinds): 24 optional inputs in, the list of filled cells out.
 export const tenseGridSchema = z
   .object(
     Object.fromEntries(TENSE_FIELD_NAMES.map((name) => [name, z.string().max(1000).optional()])),

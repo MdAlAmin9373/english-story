@@ -15,9 +15,9 @@ describe("tenseFieldName", () => {
     expect(tenseFieldName("PAST", "PERFECT", "exampleEn")).toBe("PAST.PERFECT.exampleEn");
   });
 
-  test("covers nine cells with two inputs each", () => {
-    expect(TENSE_FIELD_NAMES).toHaveLength(18);
-    expect(new Set(TENSE_FIELD_NAMES).size).toBe(18);
+  test("covers twelve cells with two inputs each", () => {
+    expect(TENSE_FIELD_NAMES).toHaveLength(24);
+    expect(new Set(TENSE_FIELD_NAMES).size).toBe(24);
   });
 });
 
@@ -64,9 +64,25 @@ describe("checkTenseGrid", () => {
     ]);
   });
 
-  test("a full grid gives nine cells", () => {
+  test("a full grid gives twelve cells", () => {
     const raw = Object.fromEntries(TENSE_FIELD_NAMES.map((name) => [name, "x y"]));
-    expect(checkTenseGrid(raw).cells).toHaveLength(9);
+    expect(checkTenseGrid(raw).cells).toHaveLength(12);
+  });
+
+  test("keeps the perfect continuous cell", () => {
+    const { cells, errors } = checkTenseGrid({
+      "PRESENT.PERFECT_CONTINUOUS.form": "has been flying",
+      "PRESENT.PERFECT_CONTINUOUS.exampleEn": "Ratul has been flying it.",
+    });
+    expect(errors).toEqual({});
+    expect(cells).toEqual([
+      {
+        time: "PRESENT",
+        kind: "PERFECT_CONTINUOUS",
+        form: "has been flying",
+        exampleEn: "Ratul has been flying it.",
+      },
+    ]);
   });
 
   test("a half-filled cell is an error on the empty input", () => {
@@ -129,6 +145,21 @@ describe("tenseGridSchema", () => {
     if (!parsed.success) {
       expect(parsed.error.issues[0].path).toEqual(["PAST.SIMPLE.form"]);
     }
+  });
+
+  test("accepts the perfect continuous cell end to end", () => {
+    const parsed = tenseGridSchema.safeParse({
+      "FUTURE.PERFECT_CONTINUOUS.form": "will have been flying",
+      "FUTURE.PERFECT_CONTINUOUS.exampleEn": "Ratul will have been flying it.",
+    });
+    expect(parsed.success && parsed.data).toEqual([
+      {
+        time: "FUTURE",
+        kind: "PERFECT_CONTINUOUS",
+        form: "will have been flying",
+        exampleEn: "Ratul will have been flying it.",
+      },
+    ]);
   });
 });
 

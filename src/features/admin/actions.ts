@@ -599,7 +599,7 @@ export async function updateQuestion(
   });
 }
 
-// Saves the 3x3 tense grid of a vocabulary word. WordForm rows are keyed by the
+// Saves the tense grid (3 times x 4 kinds) of a vocabulary word. WordForm rows are keyed by the
 // base-form word string and shared by every chapter that uses the word. The word
 // is read from the database, never from the form. Empty cells are skipped, not deleted.
 export async function saveWordForms(

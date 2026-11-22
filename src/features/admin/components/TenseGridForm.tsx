@@ -18,8 +18,8 @@ import {
 } from "../validate";
 import { SubmitRow, inputClass } from "./fields";
 
-// The 3x3 tense grid of one word. All nine cells are saved together; an empty
-// cell is skipped (an existing form is kept, never deleted).
+// The tense grid of one word (3 times x 4 kinds). All twelve cells are saved
+// together; an empty cell is skipped (an existing form is kept, never deleted).
 export function TenseGridForm({
   action,
   word,

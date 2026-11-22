@@ -1,6 +1,6 @@
 import type { TenseKind, TenseTime } from "@prisma/client";
 
-// Rows and columns of the tense table, in display order (no perfect continuous).
+// Rows and columns of the tense table, in display order.
 export const tenseTimes = ["PRESENT", "PAST", "FUTURE"] as const satisfies readonly TenseTime[];
 export const tenseKinds = [
   "SIMPLE",

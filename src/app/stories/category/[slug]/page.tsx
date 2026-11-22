@@ -31,7 +31,7 @@ export default function CategoryPage({ params }: PageProps<"/stories/category/[s
   );
 }
 
-// Reads params, the session cookie and the database, so it streams in behind Suspense.
+// Reads params and the cached database (tagged "stories"), so it streams in behind Suspense.
 async function CategoryStories({ params }: { params: Promise<{ slug: string }> }) {
   const category = categoryBySlug((await params).slug);
   if (!category) notFound();

@@ -20,29 +20,32 @@ const allForms: TenseFormInput[] = [
   f("PRESENT", "SIMPLE", "flies"),
   f("PRESENT", "CONTINUOUS", "is flying"),
   f("PRESENT", "PERFECT", "has flown"),
+  f("PRESENT", "PERFECT_CONTINUOUS", "has been flying"),
   f("PAST", "SIMPLE", "flew"),
   f("PAST", "CONTINUOUS", "was flying"),
   f("PAST", "PERFECT", "had flown"),
+  f("PAST", "PERFECT_CONTINUOUS", "had been flying"),
   f("FUTURE", "SIMPLE", "will fly"),
   f("FUTURE", "CONTINUOUS", "will be flying"),
   f("FUTURE", "PERFECT", "will have flown"),
+  f("FUTURE", "PERFECT_CONTINUOUS", "will have been flying"),
 ];
 
 const formsOf = (rows: ReturnType<typeof buildTenseTable>) =>
   rows.map((row) => row.cells.map((cell) => cell?.form ?? null));
 
 describe("buildTenseTable", () => {
-  test("rows are present, past, future; columns simple, continuous, perfect", () => {
+  test("rows are present, past, future; columns simple, continuous, perfect, perfect continuous", () => {
     expect(tenseTimes).toEqual(["PRESENT", "PAST", "FUTURE"]);
-    expect(tenseKinds).toEqual(["SIMPLE", "CONTINUOUS", "PERFECT"]);
+    expect(tenseKinds).toEqual(["SIMPLE", "CONTINUOUS", "PERFECT", "PERFECT_CONTINUOUS"]);
     expect(buildTenseTable([]).map((row) => row.time)).toEqual(["PRESENT", "PAST", "FUTURE"]);
   });
 
-  test("places all nine forms in the right cells", () => {
+  test("places all twelve forms in the right cells", () => {
     expect(formsOf(buildTenseTable(allForms))).toEqual([
-      ["flies", "is flying", "has flown"],
-      ["flew", "was flying", "had flown"],
-      ["will fly", "will be flying", "will have flown"],
+      ["flies", "is flying", "has flown", "has been flying"],
+      ["flew", "was flying", "had flown", "had been flying"],
+      ["will fly", "will be flying", "will have flown", "will have been flying"],
     ]);
   });
 
@@ -59,16 +62,16 @@ describe("buildTenseTable", () => {
   test("missing forms become null", () => {
     const rows = buildTenseTable([f("PAST", "SIMPLE", "flew")]);
     expect(formsOf(rows)).toEqual([
-      [null, null, null],
-      ["flew", null, null],
-      [null, null, null],
+      [null, null, null, null],
+      ["flew", null, null, null],
+      [null, null, null, null],
     ]);
   });
 
-  test("an empty list gives a 3 x 3 table of nulls", () => {
+  test("an empty list gives a 3 x 4 table of nulls", () => {
     const rows = buildTenseTable([]);
     expect(rows).toHaveLength(3);
-    for (const row of rows) expect(row.cells).toEqual([null, null, null]);
+    for (const row of rows) expect(row.cells).toEqual([null, null, null, null]);
   });
 
   test("the first form wins when a cell is duplicated", () => {
@@ -89,6 +92,7 @@ describe("buildTenseTable", () => {
       "সাধারণ · Simple",
       "ঘটমান · Continuous",
       "পুরাঘটিত · Perfect",
+      "পুরাঘটিত চলমান · Perfect Continuous",
     ]);
   });
 });
