@@ -6,11 +6,6 @@ export function SentencePairs({
 }) {
   return (
     <>
-      <div className="hidden grid-cols-2 gap-4 px-4 text-xs text-ink-muted sm:grid">
-        <span>বাংলা</span>
-        <span>English</span>
-      </div>
-
       <ol className="flex flex-col gap-3">
         {sentences.map((sentence) => (
           <li
