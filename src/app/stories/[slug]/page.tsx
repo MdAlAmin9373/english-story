@@ -160,7 +160,12 @@ function CourseOutline({ story }: { story: StoryProgressDetail }) {
                   aria-label={`অধ্যায় ${toBnDigits(chapter.order)}: ${chapter.titleBn} — লক করা, আগে অধ্যায় ${toBnDigits(chapter.lock.requiredOrder)} শেষ করুন`}
                   className="flex items-center justify-between gap-3 rounded-xl border border-line bg-page p-4 opacity-60"
                 >
-                  {title}
+                  <span className="flex min-w-0 flex-col gap-0.5">
+                    {title}
+                    <span className="text-xs text-ink-muted">
+                      আগের অনুশীলন শেষ করলেই খুলবে
+                    </span>
+                  </span>
                   <span aria-hidden="true" className="shrink-0 text-lg">
                     🔒
                   </span>
