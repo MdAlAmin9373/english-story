@@ -15,39 +15,30 @@ function slugifyWord(word: string): string {
 export function WordAudioButton({ word }: { word: string }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  async function play() {
+    async function play() {
     const src = `/audio/words/${slugifyWord(word)}.mp3`;
 
     try {
-      // ফাইলটিকে ফেচ করা (হেডার চেক বাইপাস করতে)
       const response = await fetch(src);
       if (!response.ok) throw new Error("File not found");
 
-      // ডেটাকে Blob-এ কনভার্ট করা
+      // ১. ফাইলটিকে ডাউনলোড করা
       const blob = await response.blob();
       
-      // লোকাল URL তৈরি করা
-      const localUrl = URL.createObjectURL(blob);
-
-      // অডিও প্লে করা
-      if (!audioRef.current) {
-        audioRef.current = new Audio(localUrl);
-      } else {
-        audioRef.current.src = localUrl;
-      }
-
-      audioRef.current.play().catch((err) => {
-        console.error("Playback failed:", err);
-      });
-
-      // মেমোরি ক্লিয়ার করা
-      audioRef.current.onended = () => URL.revokeObjectURL(localUrl);
-
+      // ২. 🔴 জোরপূর্বক MIME টাইপ 'audio/mpeg' সেট করা (Vercel-এর হেডার ইস্যু বাইপাস করতে)
+      const audioBlob = new Blob([blob], { type: "audio/mpeg" });
+      
+      // ৩. লোকাল URL তৈরি ও প্লে করা
+      const localUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(localUrl);
+      
+      await audio.play();
+      
+      audio.onended = () => URL.revokeObjectURL(localUrl);
     } catch (err) {
       console.error("Audio Error:", err);
     }
   }
-
   return (
     <button
       type="button"
