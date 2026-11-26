@@ -13,15 +13,39 @@ function slugifyWord(word: string): string {
 }
 
 export function WordAudioButton({ word }: { word: string }) {
-  function play() {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  async function play() {
     const src = `/audio/words/${slugifyWord(word)}.mp3`;
-    
-    // Chrome-এর অটোপ্লে পলিসি এড়াতে সরাসরি ক্লিকের ভেতরে Audio তৈরি করা
-    const audio = new Audio(src);
-    
-    audio.play().catch((err) => {
-      console.error("Audio Playback Failed:", err);
-    });
+
+    try {
+      // ফাইলটিকে ফেচ করা (হেডার চেক বাইপাস করতে)
+      const response = await fetch(src);
+      if (!response.ok) throw new Error("File not found");
+
+      // ডেটাকে Blob-এ কনভার্ট করা
+      const blob = await response.blob();
+      
+      // লোকাল URL তৈরি করা
+      const localUrl = URL.createObjectURL(blob);
+
+      // অডিও প্লে করা
+      if (!audioRef.current) {
+        audioRef.current = new Audio(localUrl);
+      } else {
+        audioRef.current.src = localUrl;
+      }
+
+      audioRef.current.play().catch((err) => {
+        console.error("Playback failed:", err);
+      });
+
+      // মেমোরি ক্লিয়ার করা
+      audioRef.current.onended = () => URL.revokeObjectURL(localUrl);
+
+    } catch (err) {
+      console.error("Audio Error:", err);
+    }
   }
 
   return (
