@@ -1,3 +1,4 @@
+import { WordAudioButton } from "@/features/stories/components/WordAudioButton";
 import { toBnDigits } from "@/features/stories/labels";
 import { TenseTable } from "@/features/vocab/components/TenseTable";
 import { getChapterWords, getWordFormsFor } from "@/features/vocab/queries";
@@ -32,8 +33,11 @@ export async function ImportantWords({ chapterId }: { chapterId: string }) {
             >
               <div className="flex flex-wrap items-baseline gap-x-3">
                 <span className="text-sm text-ink-muted">{toBnDigits(w.order)}.</span>
-                <span lang="en" className="text-lg font-semibold text-accent">
-                  {w.word}
+                <span className="inline-flex items-center gap-1.5">
+                  <span lang="en" className="text-lg font-semibold text-accent">
+                    {w.word}
+                  </span>
+                  <WordAudioButton word={w.word} />
                 </span>
                 <span className="text-sm text-ink-muted">
                   উচ্চারণ · <span lang="en">Pronunciation</span>: {w.pronunciationBn}
