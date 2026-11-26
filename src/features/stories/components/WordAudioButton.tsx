@@ -13,16 +13,12 @@ function slugifyWord(word: string): string {
 }
 
 export function WordAudioButton({ word }: { word: string }) {
-  // বাটনের রেফারেন্স (ঐচ্ছিক, তবে ভালো প্র্যাকটিস)
-  const buttonRef = useRef<HTMLButtonElement>(null);
-
   function play() {
     const src = `/audio/words/${slugifyWord(word)}.mp3`;
-
-    // 🔴 গুরুত্বপূর্ণ: new Audio() সরাসরি ক্লিকের ভেতরে তৈরি করা হচ্ছে
+    
+    // Chrome-এর অটোপ্লে পলিসি এড়াতে সরাসরি ক্লিকের ভেতরে Audio তৈরি করা
     const audio = new Audio(src);
     
-    // প্লে করার চেষ্টা করা এবং এরর থাকলে কনসোলে দেখানো
     audio.play().catch((err) => {
       console.error("Audio Playback Failed:", err);
     });
@@ -30,7 +26,6 @@ export function WordAudioButton({ word }: { word: string }) {
 
   return (
     <button
-      ref={buttonRef}
       type="button"
       onClick={play}
       aria-label={`Play pronunciation for ${word}`}
